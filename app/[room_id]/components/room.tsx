@@ -5,7 +5,7 @@ import { MediaConnection, Peer } from "peerjs";
 import { useParams, useRouter } from "next/navigation";
 import {
   Info,
-  UserRoundSearch,
+  CircleUser,
   MessageCircle,
   Mic,
   MicOff,
@@ -15,6 +15,7 @@ import {
   PhoneOff,
 } from "lucide-react";
 import cloneDeep from "lodash/cloneDeep";
+import update from "lodash/update";
 import dayjs from "dayjs";
 
 import getVideoGrid from "@/lib/get-video-grid";
@@ -23,6 +24,11 @@ import { useSocket } from "@/context/socket";
 import Player from "@/components/player";
 import { useStream } from "@/context/stream";
 import { Team } from "@/models/data";
+import {
+  CONFIG_AUDIO_ENABLED,
+  CONFIG_NAME,
+  CONFIG_VIDEO_ENABLED,
+} from "@/models/storage";
 
 export default function Room() {
   const router = useRouter();
@@ -49,31 +55,39 @@ export default function Room() {
 
     const _peer = new Peer();
     _peer.on("open", (id) => {
-      socket?.emit("join-room", roomId, id);
+      socket?.emit("join-room", roomId, id, {
+        username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
+      });
       setMyPeerId(id);
     });
     setPeer(_peer);
 
-    return () => {
-      _peer.destroy();
-      setPeer(undefined);
-    };
   }, [socket]);
 
   useEffect(() => {
     if (!peer || !stream || !socket) return () => {};
 
-    const handleUserConnected = (userId: string) => {
-      const call = peer.call(userId, stream);
+    const handleUserConnected = (
+      userId: string,
+      additionalData?: Record<string, string>
+    ) => {
+      const call = peer.call(userId, stream, {
+        metadata: {
+          username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
+          muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "true",
+          video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "true",
+        },
+      });
 
       call.on("stream", (remoteStream) => {
+        console.log("stream", remoteStream);
         setPlayers((prev) => ({
           ...prev,
           [userId]: {
             url: remoteStream,
-            muted: true,
-            video: true,
-            username: "jonathan gobiel",
+            muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "false",
+            video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "false",
+            username: additionalData?.username ?? "Jhon Doe",
           },
         }));
 
@@ -92,17 +106,19 @@ export default function Room() {
     if (!stream || !peer) return () => {};
 
     peer.on("call", (call) => {
+      console.log("call ", call.metadata)
       call.answer(stream);
       call.on("stream", (remoteStream) => {
         setPlayers((prev) => ({
           ...prev,
           [call.peer]: {
             url: remoteStream,
-            muted: true,
-            video: true,
-            username: "jonathan gobiel",
+            muted: call.metadata.muted,
+            video: call.metadata.video,
+            username: call.metadata.username,
           },
         }));
+       
 
         setUsers((prev) => ({
           ...prev,
@@ -112,6 +128,7 @@ export default function Room() {
     });
   }, [stream, peer]);
 
+  //set local player stream
   useEffect(() => {
     if (!myPeerId || !stream) return;
 
@@ -119,9 +136,9 @@ export default function Room() {
       ...prev,
       [myPeerId]: {
         url: stream,
-        muted: true,
-        video: true,
-        username: "jonathan gobiel",
+        muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "false",
+        video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "false",
+        username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
       },
     }));
   }, [myPeerId, stream]);
@@ -141,7 +158,6 @@ export default function Room() {
     };
 
     const handleUserToggleAudio = (userId: string) => {
-      console.log("toggle audio", userId);
       setPlayers((prev) => {
         const _prev = cloneDeep(prev);
         _prev[userId].muted = !_prev[userId].muted;
@@ -203,6 +219,7 @@ export default function Room() {
   };
 
   const handleUserLeave = () => {
+
     if (!myPeerId || !socket || !peer) return;
 
     socket.emit("user-leave", myPeerId, roomId);
@@ -237,7 +254,8 @@ export default function Room() {
           return (
             <Player
               key={id}
-              muted={id === myPeerId ? true : muted}
+              muted={muted}
+              isMe={id === myPeerId}
               video={video}
               url={url}
               username={username}
@@ -286,7 +304,7 @@ export default function Room() {
             <Info color="white" />
           </button>
           <button className="rounded-full hover:bg-gray-600 p-2 transition-all">
-            <UserRoundSearch color="white" />
+            <CircleUser color="white" />
           </button>
           <button className="rounded-full hover:bg-gray-600 p-2 transition-all">
             <MessageCircle color="white" />

@@ -9,9 +9,8 @@ export default function Page() {
 
   const steps = useMemo(
     () => ({
-      // 1: <Preview onNextStep={() => setStep((prev) => prev + 1)} />,
-      // 2: <Room />,
-      1 : <Room />
+      1: <Preview onNextStep={() => setStep((prev) => prev + 1)} />,
+      2: <Room />,
     }),
     [setStep]
   );

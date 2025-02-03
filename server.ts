@@ -10,6 +10,8 @@ import {
   USER_LEAVE_EVENT,
   USER_TOGGLE_AUDIO_EVENT,
   USER_TOGGLE_VIDEO_EVENT,
+  type ListenerServerEvent,
+  type EmitterServerEvent,
 } from "./models/socket.ts";
 
 import { fileURLToPath } from "url";
@@ -18,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = "192.168.0.104";
+const hostname = "0.0.0.0";
 const port = 3000;
 
 const app = next({ dev, hostname, port, experimentalHttpsServer: true });
@@ -34,15 +36,19 @@ app.prepare().then(() => {
     ? createHttpsServer(httpsOptions, handler)
     : createHttpServer(handler);
 
-  const io = new Server(httpServer);
+  const io = new Server<ListenerServerEvent, EmitterServerEvent>(httpServer);
 
   io.on("connection", (socket) => {
     console.log("socket connected");
 
-    socket.on(JOIN_ROOM_EVENT, (roomId, userId) => {
-      console.log(`a new user ${userId} joined room - ${roomId}`);
+    socket.on(JOIN_ROOM_EVENT, (roomId, userId, additionalData) => {
+      console.log(
+        `a new user ${userId} joined room - ${roomId} - ${additionalData}`
+      );
       socket.join(roomId); // Join the specified room
-      socket.broadcast.to(roomId).emit(USER_CONNECTED_EVENT, userId); // Notify others in the room
+      socket.broadcast
+        .to(roomId)
+        .emit(USER_CONNECTED_EVENT, userId, additionalData); // Notify others in the room
     });
 
     socket.on(USER_TOGGLE_VIDEO_EVENT, (userId, roomId) => {

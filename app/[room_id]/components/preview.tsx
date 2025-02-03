@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import ReactPlayer from "react-player";
-import { Mic, MicOff, Camera, CameraOff } from "lucide-react";
+import { Mic, MicOff, Camera, CameraOff, CircleAlert } from "lucide-react";
 import { useStream } from "@/context/stream";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import {
 } from "@/models/storage";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import clsx from "clsx";
+import PromptAccess from "./prompt-access";
 
 const formSchema = z.object({
   name: z
@@ -34,13 +36,13 @@ function JoinForm(props: { onSuccess: () => void }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: typeof window === 'undefined' ? '' : localStorage.getItem(CONFIG_NAME) || "",
     },
   });
 
   const onJoin = (values: z.infer<typeof formSchema>) => {
     localStorage.setItem(CONFIG_NAME, values.name);
-    props.onSuccess()
+    props.onSuccess();
   };
 
   return (
@@ -70,9 +72,10 @@ export default function Preview(props: { onNextStep: () => void }) {
   const [muted, setMuted] = useState(true);
   const [videoEnable, setVideoEnable] = useState(true);
 
-  const { stream } = useStream();
+  const { stream, hasAccessAudio, hasAccessVideo } = useStream();
 
   const toggleAudio = () => {
+    if(hasAccessAudio)
     setMuted((prev) => {
       localStorage.setItem(CONFIG_AUDIO_ENABLED, String(!prev));
       return !prev;
@@ -80,11 +83,14 @@ export default function Preview(props: { onNextStep: () => void }) {
   };
 
   const toggleVideo = () => {
+    if(hasAccessVideo)
     setVideoEnable((prev) => {
       localStorage.setItem(CONFIG_VIDEO_ENABLED, String(!prev));
       return !prev;
     });
   };
+
+  const hasFullAccess = hasAccessAudio && hasAccessVideo;
 
   return (
     <div className="flex flex-col h-full">
@@ -94,7 +100,7 @@ export default function Preview(props: { onNextStep: () => void }) {
         </h2>
       </header>
       <div className="grid grid-cols-12 px-16 h-full place-items-center">
-        <div className="col-span-8 w-full">
+        <div className="col-span-12 lg:col-span-8 w-full">
           <div
             style={{
               position: "relative",
@@ -120,6 +126,20 @@ export default function Preview(props: { onNextStep: () => void }) {
                 }}
               />
             )}
+            {hasFullAccess && !stream && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  color: "white",
+                  fontSize: "20px",
+                }}
+              >
+                Camera is starting
+              </div>
+            )}
             {!videoEnable && (
               <div
                 style={{
@@ -135,18 +155,62 @@ export default function Preview(props: { onNextStep: () => void }) {
               </div>
             )}
 
+            {(!hasAccessVideo || (!hasAccessAudio && !hasAccessVideo)) && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  color: "white",
+                  fontSize: "20px",
+                }}
+                className="z-10"
+              >
+                <PromptAccess />
+              </div>
+            )}
+
             <div className="absolute bottom-4 w-full inline-flex justify-center gap-x-3">
               <button
-                className="rounded-full hover:bg-[rgba(0,0,0,.4)] border border-[white] p-2"
+                className={clsx(
+                  "rounded-full hover:bg-[rgba(0,0,0,.4)] border border-[white] p-2 relative",
+                  {
+                    "bg-red-500": muted,
+                  }
+                )}
                 onClick={toggleAudio}
               >
+                {!hasAccessAudio && (
+                  <div className="absolute -top-1 -right-0">
+                    <CircleAlert
+                      size={16}
+                      fill="orange"
+                      strokeWidth={"1.25px"}
+                    />
+                  </div>
+                )}
                 {muted ? <MicOff color="white" /> : <Mic color="white" />}
               </button>
               <button
-                className="rounded-full hover:bg-[rgba(0,0,0,.4)] border border-[white] p-2"
+                className={clsx(
+                  "rounded-full hover:bg-[rgba(0,0,0,.4)] border border-[white] p-2 relative",
+                  {
+                    "bg-red-500": !videoEnable || !hasAccessVideo,
+                  }
+                )}
                 onClick={toggleVideo}
               >
-                {videoEnable ? (
+                {!hasAccessVideo && (
+                  <div className="absolute -top-1 -right-0">
+                    <CircleAlert
+                      size={16}
+                      fill="orange"
+                      strokeWidth={"1.25px"}
+                    />
+                  </div>
+                )}
+                {videoEnable && hasAccessVideo ? (
                   <Camera color="white" />
                 ) : (
                   <CameraOff color="white" />
@@ -155,7 +219,7 @@ export default function Preview(props: { onNextStep: () => void }) {
             </div>
           </div>
         </div>
-        <div className="col-span-4 w-full px-14">
+        <div className="col-span-12 lg:col-span-4 w-full px-14">
           <h4 className="text-2xl font-semibold tracking-tigh text-center">
             Ready to join?
           </h4>

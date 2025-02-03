@@ -5,7 +5,7 @@ export const USER_LEAVE_EVENT = 'user-leave'
 export const USER_CONNECTED_EVENT = 'user-connected'
 
 export interface ListenerServerEvent { 
-    [JOIN_ROOM_EVENT] : (roomId: string, userId: string) => void;
+    [JOIN_ROOM_EVENT] : (roomId: string, userId: string , additionalData? : Record<string, string>) => void;
     [USER_CONNECTED_EVENT]: (userId: string) => void;
     [USER_TOGGLE_VIDEO_EVENT]: (userId: string, roomId: string) => void;
     [USER_TOGGLE_AUDIO_EVENT]: (userId: string, roomId: string) => void;
@@ -13,11 +13,11 @@ export interface ListenerServerEvent {
 }
 
 export interface EmitterServerEvent { 
-    [USER_CONNECTED_EVENT]: (userId: string) => void;
+    [USER_CONNECTED_EVENT]: (userId: string, additionalData? : Record<string, string>) => void;
     [USER_TOGGLE_VIDEO_EVENT]: (userId: string) => void;
     [USER_TOGGLE_AUDIO_EVENT]: (userId: string) => void;
     [USER_LEAVE_EVENT]: (userId: string) => void;
-    [JOIN_ROOM_EVENT] : (roomId: string, userId: string) => void;
+    [JOIN_ROOM_EVENT] : (roomId: string, userId: string, additionalData? : Record<string, string>) => void;
 }
 
 
@@ -25,7 +25,7 @@ export interface ListenerClientEvent {
     [USER_TOGGLE_AUDIO_EVENT]: (userId: string) => void;
     [USER_LEAVE_EVENT]: (userId: string) => void;
     [USER_TOGGLE_VIDEO_EVENT]: (userId: string) => void;
-    [USER_CONNECTED_EVENT]: (userId: string) => void;
+    [USER_CONNECTED_EVENT]: (userId: string, additionalData? : Record<string, string>) => void;
 
 }
 
@@ -33,6 +33,6 @@ export interface EmitterClientEvent {
     [USER_TOGGLE_AUDIO_EVENT]: (userId: string, roomId: string) => void;
     [USER_TOGGLE_VIDEO_EVENT]: (userId: string, roomId: string) => void;
     [USER_LEAVE_EVENT]: (userId: string, roomId: string) => void;
-    [JOIN_ROOM_EVENT] : (roomId: string, userId: string) => void;
+    [JOIN_ROOM_EVENT] : (roomId: string, userId: string, additionalData? : Record<string, string>) => void;
     
 }

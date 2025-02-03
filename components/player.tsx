@@ -1,11 +1,10 @@
 import { MicOff } from "lucide-react";
 import ReactPlayer from "react-player";
 
-import getAspectRatioStyle from "@/lib/get-aspect-ration-style";
 import Image from "next/image";
 import { Team } from "@/models/data";
 
-export default function Player(props: Team) {
+export default function Player(props: Team & {isMe: boolean}) {
   return (
     <div
       className="bg-slate-800"
@@ -16,6 +15,9 @@ export default function Player(props: Team) {
         overflow: "hidden",
       }}
     >
+      <div className="absolute bottom-1 left-2">
+        <span className="text-white capitalize">{props.username}</span>
+      </div>
       {props.muted && (
         <div className="absolute top-3 right-3">
           <MicOff size={16} color="white" />
@@ -47,7 +49,7 @@ export default function Player(props: Team) {
         height="100%"
         playing
         url={props.url}
-        muted={props.muted}
+        muted={props.isMe ? true : props.muted}
         style={{
           position: "absolute",
           top: 0,
