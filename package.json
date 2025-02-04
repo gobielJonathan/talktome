@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node server.ts",
+    "dev": "node --experimental-strip-types server.ts",
     "build": "next build",
-    "start": "NODE_ENV=production node server.ts",
+    "start": "NODE_ENV=production node --experimental-strip-types server.ts",
     "lint": "next lint"
   },
   "dependencies": {
@@ -44,6 +44,6 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": ">=23.0.0"
+    "node": ">=22.0.0"
   }
 }
