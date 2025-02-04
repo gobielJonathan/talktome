@@ -3,11 +3,12 @@ import ReactPlayer from "react-player";
 
 import Image from "next/image";
 import { Team } from "@/models/data";
+// import getAspectRatioStyle from "@/lib/get-aspect-ration-style";
 
 export default function Player(props: Team & {isMe: boolean}) {
   return (
     <div
-      className="bg-slate-800"
+      className="bg-slate-800 h-full"
       style={{
         position: "relative",
         // paddingTop: getAspectRatioStyle(16, 9),

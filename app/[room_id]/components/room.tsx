@@ -29,6 +29,7 @@ import {
   CONFIG_NAME,
   CONFIG_VIDEO_ENABLED,
 } from "@/models/storage";
+import Highlighted from "./highlighted";
 
 export default function Room() {
   const router = useRouter();
@@ -244,12 +245,15 @@ export default function Room() {
         <p className="text-white font-semibold">{roomId}</p>
       </header>
       <div
-        className="grid gap-2 items-center p-4 flex-grow"
+        // className="grid gap-2 items-center p-4 flex-grow"
+        className="grid gap-2 p-4 flex-grow"
+        
         style={{
-          gridTemplateColumns: getVideoGrid(Object.keys(players).length),
+          // gridTemplateColumns: getVideoGrid(Object.keys(players).length),
+          gridTemplateColumns: '1fr 200px'
         }}
       >
-        {Object.entries(players).map(([id, players]) => {
+        {/* {Object.entries(players).map(([id, players]) => {
           const { muted, video, url, username } = players;
           return (
             <Player
@@ -261,7 +265,8 @@ export default function Room() {
               username={username}
             />
           );
-        })}
+        })} */}
+        <Highlighted />
       </div>
 
       <div className="grid grid-cols-12 py-4 px-6">

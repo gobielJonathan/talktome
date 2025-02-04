@@ -174,9 +174,10 @@ export default function Preview(props: { onNextStep: () => void }) {
             <div className="absolute bottom-4 w-full inline-flex justify-center gap-x-3">
               <button
                 className={clsx(
-                  "rounded-full hover:bg-[rgba(0,0,0,.4)] border border-[white] p-2 relative",
+                  "rounded-full border border-[white] p-2 relative",
                   {
                     "bg-red-500": muted,
+                    'hover:bg-[rgba(0,0,0,.4)]': !muted
                   }
                 )}
                 onClick={toggleAudio}
@@ -194,9 +195,10 @@ export default function Preview(props: { onNextStep: () => void }) {
               </button>
               <button
                 className={clsx(
-                  "rounded-full hover:bg-[rgba(0,0,0,.4)] border border-[white] p-2 relative",
+                  "rounded-full border border-[white] p-2 relative",
                   {
                     "bg-red-500": !videoEnable || !hasAccessVideo,
+                    'hover:bg-[rgba(0,0,0,.4)]': videoEnable && hasAccessVideo
                   }
                 )}
                 onClick={toggleVideo}
