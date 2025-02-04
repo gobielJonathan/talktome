@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Team } from "@/models/data";
 // import getAspectRatioStyle from "@/lib/get-aspect-ration-style";
 
-export default function Player(props: Team & {isMe: boolean}) {
+export default function Player(props:Omit<Team,"peerId"> & {isMe: boolean}) {
   return (
     <div
       className="bg-slate-800 h-full"

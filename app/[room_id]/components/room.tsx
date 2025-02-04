@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { MediaConnection, Peer } from "peerjs";
+import { useEffect, useState } from "react";
+import { MediaConnection } from "peerjs";
 import { useParams, useRouter } from "next/navigation";
 import {
   Info,
@@ -15,55 +15,34 @@ import {
   PhoneOff,
 } from "lucide-react";
 import cloneDeep from "lodash/cloneDeep";
-import update from "lodash/update";
 import dayjs from "dayjs";
 
-import getVideoGrid from "@/lib/get-video-grid";
-import { getScreenSharing, getVideoSharing } from "@/lib/sharing";
+import { getScreenSharing } from "@/lib/sharing";
 import { useSocket } from "@/context/socket";
-import Player from "@/components/player";
 import { useStream } from "@/context/stream";
-import { Team } from "@/models/data";
+import { Teams } from "@/models/data";
 import {
   CONFIG_AUDIO_ENABLED,
   CONFIG_NAME,
   CONFIG_VIDEO_ENABLED,
 } from "@/models/storage";
-import Highlighted from "./highlighted";
+import { usePeer } from "@/context/peer";
+import RoomLayout from "./room-layout";
+import SheetInfo from "./sheets/info";
+import SheetMember from "./sheets/member";
+import SheetChat from "./sheets/chat";
 
 export default function Room() {
   const router = useRouter();
   const roomId = String(useParams()?.room_id);
   const { socket } = useSocket();
-
-  const [time, setTime] = useState(new Date());
-  const [peer, setPeer] = useState<Peer | undefined>(undefined);
-
-  const [users, setUsers] = useState<Record<string, MediaConnection>>({});
-  const [players, setPlayers] = useState<Record<string, Team>>({});
-
-  const [myPeerId, setMyPeerId] = useState<string | undefined>(undefined);
-
+  const { myPeerId, peer } = usePeer();
   const { stream, setStream } = useStream();
 
-  const isAlreadyInit = useRef(false);
+  const [time, setTime] = useState(new Date());
 
-  //handle peer connection
-  useEffect(() => {
-    if (isAlreadyInit.current || !socket) return;
-
-    isAlreadyInit.current = true;
-
-    const _peer = new Peer();
-    _peer.on("open", (id) => {
-      socket?.emit("join-room", roomId, id, {
-        username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
-      });
-      setMyPeerId(id);
-    });
-    setPeer(_peer);
-
-  }, [socket]);
+  const [users, setUsers] = useState<Record<string, MediaConnection>>({});
+  const [teams, setTeams] = useState<Teams>({});
 
   useEffect(() => {
     if (!peer || !stream || !socket) return () => {};
@@ -82,10 +61,11 @@ export default function Room() {
 
       call.on("stream", (remoteStream) => {
         console.log("stream", remoteStream);
-        setPlayers((prev) => ({
+        setTeams((prev) => ({
           ...prev,
           [userId]: {
             url: remoteStream,
+            peerId: userId,
             muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "false",
             video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "false",
             username: additionalData?.username ?? "Jhon Doe",
@@ -107,19 +87,19 @@ export default function Room() {
     if (!stream || !peer) return () => {};
 
     peer.on("call", (call) => {
-      console.log("call ", call.metadata)
+      console.log("call ", call.metadata);
       call.answer(stream);
       call.on("stream", (remoteStream) => {
-        setPlayers((prev) => ({
+        setTeams((prev) => ({
           ...prev,
           [call.peer]: {
             url: remoteStream,
+            peerId: call.peer,
             muted: call.metadata.muted,
             video: call.metadata.video,
             username: call.metadata.username,
           },
         }));
-       
 
         setUsers((prev) => ({
           ...prev,
@@ -133,10 +113,11 @@ export default function Room() {
   useEffect(() => {
     if (!myPeerId || !stream) return;
 
-    setPlayers((prev) => ({
+    setTeams((prev) => ({
       ...prev,
       [myPeerId]: {
         url: stream,
+        peerId: myPeerId,
         muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "false",
         video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "false",
         username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
@@ -154,12 +135,12 @@ export default function Room() {
       const { [userId]: deletedUser, ...withoutUserLeave } = users;
       setUsers(withoutUserLeave);
 
-      const { [userId]: deletedPlayer, ...withoutPlayerLeave } = players;
-      setPlayers(withoutPlayerLeave);
+      const { [userId]: deletedPlayer, ...withoutPlayerLeave } = teams;
+      setTeams(withoutPlayerLeave);
     };
 
     const handleUserToggleAudio = (userId: string) => {
-      setPlayers((prev) => {
+      setTeams((prev) => {
         const _prev = cloneDeep(prev);
         _prev[userId].muted = !_prev[userId].muted;
         return _prev;
@@ -167,9 +148,17 @@ export default function Room() {
     };
 
     const handleUserToggleVideo = (userId: string) => {
-      setPlayers((prev) => {
+      setTeams((prev) => {
         const _prev = cloneDeep(prev);
         _prev[userId].video = !_prev[userId].video;
+        return _prev;
+      });
+    };
+
+    const handleUserHighlight = (userId: string) => {
+      setTeams((prev) => {
+        const _prev = cloneDeep(prev);
+        _prev[userId].pinned = !_prev[userId].pinned;
         return _prev;
       });
     };
@@ -177,13 +166,15 @@ export default function Room() {
     socket.on("user-leave", handleUserLeave);
     socket.on("user-toggle-audio", handleUserToggleAudio);
     socket.on("user-toggle-video", handleUserToggleVideo);
+    socket.on("user-toggle-highlight", handleUserHighlight);
 
     return () => {
       socket.off("user-leave", handleUserLeave);
       socket.off("user-toggle-audio", handleUserToggleAudio);
       socket.off("user-toggle-video", handleUserToggleVideo);
+      socket.off("user-toggle-highlight", handleUserHighlight);
     };
-  }, [socket, users, players]);
+  }, [socket, users, teams]);
 
   //handle time
   useEffect(() => {
@@ -199,7 +190,7 @@ export default function Room() {
   const toggleAudio = () => {
     if (!myPeerId) return;
 
-    setPlayers((prev) => {
+    setTeams((prev) => {
       const _prev = cloneDeep(prev);
       _prev[myPeerId].muted = !_prev[myPeerId].muted;
       return _prev;
@@ -211,7 +202,7 @@ export default function Room() {
   const toggleVideo = () => {
     if (!myPeerId) return;
 
-    setPlayers((prev) => {
+    setTeams((prev) => {
       const _prev = cloneDeep(prev);
       _prev[myPeerId].video = !_prev[myPeerId].video;
       return _prev;
@@ -220,7 +211,6 @@ export default function Room() {
   };
 
   const handleUserLeave = () => {
-
     if (!myPeerId || !socket || !peer) return;
 
     socket.emit("user-leave", myPeerId, roomId);
@@ -237,37 +227,15 @@ export default function Room() {
   };
 
   //get the player config ( playing and muted )
-  const { muted, video } = players[myPeerId ?? ""] || {};
+  const { muted, video } = teams[myPeerId ?? ""] || {};
 
   return (
     <div className="bg-gray-900 flex flex-col h-full flex-wrap">
       <header className="inline-flex lg:hidden items-center py-2 px-6">
         <p className="text-white font-semibold">{roomId}</p>
       </header>
-      <div
-        // className="grid gap-2 items-center p-4 flex-grow"
-        className="grid gap-2 p-4 flex-grow"
-        
-        style={{
-          // gridTemplateColumns: getVideoGrid(Object.keys(players).length),
-          gridTemplateColumns: '1fr 200px'
-        }}
-      >
-        {/* {Object.entries(players).map(([id, players]) => {
-          const { muted, video, url, username } = players;
-          return (
-            <Player
-              key={id}
-              muted={muted}
-              isMe={id === myPeerId}
-              video={video}
-              url={url}
-              username={username}
-            />
-          );
-        })} */}
-        <Highlighted />
-      </div>
+
+      <RoomLayout teams={teams} />
 
       <div className="grid grid-cols-12 py-4 px-6">
         <div className="col-span-3 hidden xl:inline-flex items-center">
@@ -305,15 +273,15 @@ export default function Room() {
           </button>
         </div>
         <div className="col-span-3 hidden xl:inline-flex gap-x-2 justify-end">
-          <button className="rounded-full hover:bg-gray-600 p-2 transition-all">
+          <SheetInfo>
             <Info color="white" />
-          </button>
-          <button className="rounded-full hover:bg-gray-600 p-2 transition-all">
+          </SheetInfo>
+          <SheetMember teams={Object.values(teams)}>
             <CircleUser color="white" />
-          </button>
-          <button className="rounded-full hover:bg-gray-600 p-2 transition-all">
+          </SheetMember>
+          <SheetChat teams={teams}>
             <MessageCircle color="white" />
-          </button>
+          </SheetChat>
         </div>
       </div>
     </div>
