@@ -13,6 +13,7 @@ import { Teams } from "@/models/data";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { usePeer } from "@/context/peer";
+import { CONFIG_NAME } from "@/models/storage";
 
 export default function SheetChat(props: {
   children: ReactNode;
@@ -45,6 +46,11 @@ export default function SheetChat(props: {
 
   const onSendChat = () => {
     if (text && myPeerId && socket) {
+        setChats((prevChats) => [
+            ...prevChats,
+            { username: localStorage.getItem(CONFIG_NAME) ?? "jhon doe", message: text },
+          ]);
+
       socket.emit("user-send-chat", myPeerId, roomId, text);
       setText("");
     }

@@ -32,7 +32,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const _socket = io();
-    console.log("socket", _socket);
     setSocket(_socket);
   }, []);
 
@@ -43,10 +42,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       console.log("Error establishing socket", err.message);
     };
 
-    socket?.on("connect_error", reconnect);
+    socket.on("connect_error", reconnect);
 
-    return () => socket?.off("connect_error", reconnect);
-  }, []);
+    return () => socket.off("connect_error", reconnect);
+  }, [socket]);
 
   return <SocketContext value={{ socket }}>{children}</SocketContext>;
 };
