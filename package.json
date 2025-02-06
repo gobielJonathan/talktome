@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "npx esbuild server.ts --outfile=build/server.js --format=esm --platform=node --bundle --loader:.ts=ts",
-    "build": "next build && cp .env.production .env",
-    "start": "node server.js --env-file=.env.production",
+    "build": "next build",
+    "start": "cross-env NODE_ENV=production node server.js",
     "build:server": "npx esbuild server.ts --outfile=server.js --format=esm --platform=node --bundle --loader:.ts=ts",
     "lint": "next lint"
   },
