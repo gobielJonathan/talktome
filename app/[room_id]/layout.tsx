@@ -11,9 +11,7 @@ export default function RootLayout({
 }>) {
   return (
     <SocketProvider>
-      <PeerProvider>
       <StreamProvider>{children}</StreamProvider>
-      </PeerProvider>
     </SocketProvider>
   );
 }

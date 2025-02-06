@@ -4,7 +4,7 @@ export interface Team {
   video: boolean;
   username: string;
   peerId: string;
-  pinned ? : boolean
+  pinned: boolean
 }
 
 export type TeamId = string;

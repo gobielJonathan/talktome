@@ -13,6 +13,7 @@ import {
   type ListenerServerEvent,
   type EmitterServerEvent,
   USER_SEND_CHAT_EVENT,
+  USER_TOGGLE_HIGHLIGHT_EVENT,
 } from "./models/socket.ts";
 
 import { fileURLToPath } from "url";
@@ -73,12 +74,18 @@ app.prepare().then(() => {
       socket.broadcast.to(roomId).emit(USER_LEAVE_EVENT, userId); // Notify others in the room
     });
 
+    socket.on(USER_TOGGLE_HIGHLIGHT_EVENT, (userId, roomId) => {
+      console.log(`user pin ${userId} - ${roomId}`);
+
+      socket.join(roomId); // Join the room if not already joined
+      socket.broadcast.to(roomId).emit(USER_TOGGLE_HIGHLIGHT_EVENT, userId); // Notify others in the room
+    });
 
     socket.on(USER_SEND_CHAT_EVENT, (userId, roomId, message) => {
       console.log(`user send chat ${userId} - ${roomId} - ${message}`);
 
       socket.join(roomId); // Join the room if not already joined
-      socket.broadcast.to(roomId).emit(USER_SEND_CHAT_EVENT,userId, message); // Notify others in the room
+      socket.broadcast.to(roomId).emit(USER_SEND_CHAT_EVENT, userId, message); // Notify others in the room
     });
 
     socket.on("disconnect", () => {

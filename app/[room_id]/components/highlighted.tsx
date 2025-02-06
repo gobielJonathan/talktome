@@ -1,13 +1,5 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
-
-// Import Swiper styles
-import "swiper/swiper-bundle.css";
-import "swiper/css/pagination";
-
 import Player from "@/components/player";
 import { useStream } from "@/context/stream";
-
 
 import { Team } from "@/models/data";
 import { usePeer } from "@/context/peer";
@@ -19,48 +11,46 @@ interface Props {
 
 export default function Highlighted(props: Props) {
   const { myPeerId } = usePeer();
-  const { stream } = useStream();
 
   return (
     <>
       <div className="highlight">
-        <div className="grid grid-cols-2 grid-rows-2 gap-4">
+        <div
+          className="grid gap-4 h-full"
+          style={{
+            gridTemplateColumns: `repeat(${props.highlighted.length}, 1fr)`,
+          }}
+        >
           {props.highlighted.map((team, index) => (
             <div key={index}>
               <Player
-                url={stream}
+                url={team.url}
                 muted={team.muted}
                 isMe={team.peerId === myPeerId}
                 video={team.video}
                 username={team.username}
+                pinned
+                layout="highlight"
               />
             </div>
           ))}
         </div>
       </div>
-      <div className="px-2 h-[600px]">
-        <Swiper
-          direction="vertical"
-          slidesPerView={6}
-          spaceBetween={100}
-          pagination={{
-            clickable: true,
-          }}
-          modules={[Pagination]}
-          className="h-full"
-        >
+      <div className="px-2 max-h-96">
+        <div className="flex flex-col gap-y-4">
           {props.teams.map((team, index) => (
-            <SwiperSlide key={index}>
+            <div key={index} className="h-[152px]">
               <Player
-                url={stream}
+                url={team.url}
                 muted={team.muted}
                 isMe={team.peerId === myPeerId}
                 video={team.video}
                 username={team.username}
+                layout="highlight"
               />
-            </SwiperSlide>
+            </div>
           ))}
-        </Swiper>
+        </div>
       </div>
     </>
   );

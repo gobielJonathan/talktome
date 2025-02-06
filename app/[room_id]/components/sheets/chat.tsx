@@ -3,14 +3,13 @@ import { SendHorizonal } from "lucide-react";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useSocket } from "@/context/socket";
 import { Teams } from "@/models/data";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { usePeer } from "@/context/peer";
 import { CONFIG_NAME } from "@/models/storage";
@@ -32,7 +31,7 @@ export default function SheetChat(props: {
     if (!socket) return () => {};
 
     const handleChat = (userId: string, message: string) => {
-      console.log("user-send-chat", userId, message);
+      console.log("user-send-chat", userId, message, props.teams);
       setChats((prevChats) => [
         ...prevChats,
         { username: props.teams[userId].username, message },
@@ -42,7 +41,7 @@ export default function SheetChat(props: {
     return () => {
       socket.off("user-send-chat", handleChat);
     };
-  }, [socket]);
+  }, [socket, props.teams]);
 
   const onSendChat = () => {
     if (text && myPeerId && socket) {
@@ -59,10 +58,13 @@ export default function SheetChat(props: {
   return (
     <Sheet>
       <SheetTrigger>{props.children}</SheetTrigger>
-      <SheetContent>
+      <SheetContent className="h-full flex flex-col">
         <SheetHeader>
           <SheetTitle>In-call messages</SheetTitle>
-          <div className="h-full overflow-y-auto">
+        </SheetHeader>
+
+       <div className="flex flex-col flex-1">
+       <div className="flex-1 basis-auto h-0 overflow-y-auto mb-4">
             {chats.map((chat, index) => (
               <div key={index}>
                 <b className="font-semibold">{chat.username}</b>
@@ -70,20 +72,25 @@ export default function SheetChat(props: {
               </div>
             ))}
           </div>
-          <div className="rounded-xl flex items-center bg-gray-100">
+          
+        <div className="rounded-xl flex items-center bg-gray-100">
             <div className="flex-1">
               <Input
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                className="border-none shadow-none"
-                placeholder="Send a message to everyone"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={e => {
+                e.key === "Enter" && onSendChat();
+              }}
+              className="border-none shadow-none"
+              placeholder="Send a message to everyone"
               />
             </div>
             <button onClick={onSendChat} className="mr-2">
               <SendHorizonal className="text-gray-400" />
             </button>
           </div>
-        </SheetHeader>
+       </div>
+
       </SheetContent>
     </Sheet>
   );

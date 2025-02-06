@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MediaConnection } from "peerjs";
+import { useEffect, useRef, useState } from "react";
+import Peer, { MediaConnection } from "peerjs";
 import { useParams, useRouter } from "next/navigation";
 import {
   Info,
@@ -13,36 +13,46 @@ import {
   CameraOff,
   Monitor,
   PhoneOff,
+  X,
 } from "lucide-react";
 import cloneDeep from "lodash/cloneDeep";
 import dayjs from "dayjs";
 
-import { getScreenSharing } from "@/lib/sharing";
+import { getScreenSharing, getVideoSharing } from "@/lib/sharing";
 import { useSocket } from "@/context/socket";
 import { useStream } from "@/context/stream";
-import { Teams } from "@/models/data";
-import {
-  CONFIG_AUDIO_ENABLED,
-  CONFIG_NAME,
-  CONFIG_VIDEO_ENABLED,
-} from "@/models/storage";
+import { Team, Teams } from "@/models/data";
+import { CONFIG_NAME } from "@/models/storage";
 import { usePeer } from "@/context/peer";
 import RoomLayout from "./room-layout";
 import SheetInfo from "./sheets/info";
 import SheetMember from "./sheets/member";
 import SheetChat from "./sheets/chat";
+import useUIListener from "@/hooks/use-ui-listener";
+import { getMutedValue, getUsername, getVideoValue } from "@/models/preview";
+import clsx from "clsx";
+
+export const dynamic = "force-dynamic";
 
 export default function Room() {
   const router = useRouter();
   const roomId = String(useParams()?.room_id);
   const { socket } = useSocket();
   const { myPeerId, peer } = usePeer();
+
   const { stream, setStream } = useStream();
+  const shareScreenPeer = useRef<Peer | null>(null);
+  const screenStream = useRef<MediaStream | null>(null);
 
+  const { unsubscribe } = useUIListener();
   const [time, setTime] = useState(new Date());
-
   const [users, setUsers] = useState<Record<string, MediaConnection>>({});
   const [teams, setTeams] = useState<Teams>({});
+
+  useEffect(() => {
+    window.addEventListener("unload", handleUserLeave);
+    return () => window.removeEventListener("unload", handleUserLeave);
+  }, []);
 
   useEffect(() => {
     if (!peer || !stream || !socket) return () => {};
@@ -53,22 +63,22 @@ export default function Room() {
     ) => {
       const call = peer.call(userId, stream, {
         metadata: {
-          username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
-          muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "true",
-          video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "true",
+          username: getUsername(),
+          muted: getMutedValue(),
+          video: getVideoValue(),
         },
       });
 
       call.on("stream", (remoteStream) => {
-        console.log("stream", remoteStream);
         setTeams((prev) => ({
           ...prev,
           [userId]: {
             url: remoteStream,
             peerId: userId,
-            muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "false",
-            video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "false",
+            muted: getMutedValue(),
+            video: getVideoValue(),
             username: additionalData?.username ?? "Jhon Doe",
+            pinned: false,
           },
         }));
 
@@ -87,7 +97,6 @@ export default function Room() {
     if (!stream || !peer) return () => {};
 
     peer.on("call", (call) => {
-      console.log("call ", call.metadata);
       call.answer(stream);
       call.on("stream", (remoteStream) => {
         setTeams((prev) => ({
@@ -98,6 +107,7 @@ export default function Room() {
             muted: call.metadata.muted,
             video: call.metadata.video,
             username: call.metadata.username,
+            pinned: call.metadata.pinned || false,
           },
         }));
 
@@ -118,9 +128,10 @@ export default function Room() {
       [myPeerId]: {
         url: stream,
         peerId: myPeerId,
-        muted: localStorage.getItem(CONFIG_AUDIO_ENABLED) === "false",
-        video: localStorage.getItem(CONFIG_VIDEO_ENABLED) === "false",
-        username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
+        muted: getMutedValue(),
+        video: getVideoValue(),
+        username: getUsername(),
+        pinned: false,
       },
     }));
   }, [myPeerId, stream]);
@@ -129,14 +140,19 @@ export default function Room() {
     if (!socket) return () => {};
 
     const handleUserLeave = (userId: string) => {
-      if (!users[userId]) return;
+      setUsers((_users) => {
+        if (!_users[userId]) return _users;
+        _users[userId].close();
+        const { [userId]: deletedUser, ...withoutUserLeave } = users;
 
-      users[userId].close();
-      const { [userId]: deletedUser, ...withoutUserLeave } = users;
-      setUsers(withoutUserLeave);
+        return withoutUserLeave;
+      });
 
-      const { [userId]: deletedPlayer, ...withoutPlayerLeave } = teams;
-      setTeams(withoutPlayerLeave);
+      setTeams((_teams) => {
+        if (!_teams[userId]) return _teams;
+        const { [userId]: deletedPlayer, ...withoutPlayerLeave } = _teams;
+        return withoutPlayerLeave;
+      });
     };
 
     const handleUserToggleAudio = (userId: string) => {
@@ -174,7 +190,7 @@ export default function Room() {
       socket.off("user-toggle-video", handleUserToggleVideo);
       socket.off("user-toggle-highlight", handleUserHighlight);
     };
-  }, [socket, users, teams]);
+  }, [socket]);
 
   //handle time
   useEffect(() => {
@@ -219,15 +235,78 @@ export default function Room() {
     router.push("/");
   };
 
-  const handleShareScreen = async () => {
-    const screenStream = await getScreenSharing();
-    if (screenStream) {
-      setStream(screenStream);
-    }
+  const handleUserUnshare = () => {
+    if (!shareScreenPeer.current || !screenStream.current) return;
+
+    const shareScreePeerId = shareScreenPeer.current.id;
+    setTeams((prev) => {
+      const { [shareScreePeerId]: deletedShareScreen, ...withoutShareScreen } =
+        prev;
+      return withoutShareScreen;
+    });
+    screenStream.current.getTracks().forEach((track) => track.stop());
+    shareScreenPeer.current?.destroy();
+    socket?.emit("user-leave", shareScreePeerId, roomId);
   };
 
+  const handleShareScreen = async () => {
+    if (!myPeerId) return;
+
+    const _screenStream = await getScreenSharing();
+    if (!_screenStream) return;
+    screenStream.current = _screenStream;
+
+    const shareScreenName = getUsername() + " Screen";
+
+    shareScreenPeer.current = new Peer(`${myPeerId}-screen`);
+    shareScreenPeer.current.on("open", (shareScreePeerId) => {
+
+      setTeams((prev) => ({
+        ...prev,
+        [shareScreePeerId]: {
+          url: _screenStream,
+          peerId: shareScreePeerId,
+          muted: true,
+          video: true,
+          username: shareScreenName,
+          pinned: true,
+        },
+      }));
+
+      Object.keys(teams).forEach((peer) => {
+        shareScreenPeer.current?.call(peer, _screenStream, {
+          metadata: {
+            username: shareScreenName,
+            muted: true,
+            video: true,
+            pinned: true,
+          },
+        });
+      });
+    });
+
+    const [track] = _screenStream.getTracks();
+    track.addEventListener("ended", handleUserUnshare);
+    unsubscribe(() => {
+      track.removeEventListener("ended", handleUserUnshare);
+    });
+  };
+
+  const onToggleUserPin= (team: Team) => {
+
+    setTeams((prev) => {
+      const _prev = cloneDeep(prev);
+      _prev[team.peerId].pinned = !_prev[team.peerId].pinned;
+      return _prev;
+    });
+    socket?.emit("user-toggle-highlight", team.peerId, roomId); 
+  }
+
   //get the player config ( playing and muted )
-  const { muted, video } = teams[myPeerId ?? ""] || {};
+  const { muted = getMutedValue(), video = getVideoValue() } =
+    teams[myPeerId ?? ""] || {};
+
+  const isCurrentUserShareScreen = Boolean(teams[`${myPeerId}-screen`]);
 
   return (
     <div className="bg-gray-900 flex flex-col h-full flex-wrap">
@@ -259,12 +338,13 @@ export default function Room() {
             {video ? <Camera color="white" /> : <CameraOff color="white" />}
           </button>
           <button
-            className="rounded-full hover:bg-gray-600 bg-gray-700 p-2"
+            className={clsx("rounded-full hover:bg-gray-600 bg-gray-700 p-2", {
+              "bg-blue-500 hover:bg-blue-400": isCurrentUserShareScreen,
+            })}
             onClick={handleShareScreen}
           >
             <Monitor color="white" />
           </button>
-
           <button
             className="rounded-full hover:bg-red-600 bg-red-900 p-2"
             onClick={handleUserLeave}
@@ -276,7 +356,7 @@ export default function Room() {
           <SheetInfo>
             <Info color="white" />
           </SheetInfo>
-          <SheetMember teams={Object.values(teams)}>
+          <SheetMember teams={Object.values(teams)} onToggleUserPin={onToggleUserPin}>
             <CircleUser color="white" />
           </SheetMember>
           <SheetChat teams={teams}>

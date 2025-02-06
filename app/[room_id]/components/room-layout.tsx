@@ -14,24 +14,23 @@ export default function RoomLayout(props: Props) {
 
   const highlightTeams = Object.values(teams).filter((team) => team.pinned);
 
-  if (highlightTeams.length > 0) {
+  if (highlightTeams.length > 0 && Object.values(teams).length == 2) {
     const highlightTeamsId = highlightTeams.map((team) => team.peerId);
 
     const hightlightedTeams: Team[] = Object.entries(props.teams)
       .filter(([id]) => highlightTeamsId.includes(id))
       .map(([_, team]) => team);
 
+    const _teams = Object.values(teams).filter((team) => !team.pinned);
+
     return (
       <div
-        className="grid gap-2 p-4 flex-grow"
+        className="grid gap-2 p-4 flex-grow w-full"
         style={{
           gridTemplateColumns: "1fr 200px",
         }}
       >
-        <Highlighted
-          highlighted={hightlightedTeams}
-          teams={Object.values(teams)}
-        />
+        <Highlighted highlighted={hightlightedTeams} teams={_teams} />
       </div>
     );
   }

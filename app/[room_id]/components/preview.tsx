@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import clsx from "clsx";
 import PromptAccess from "./prompt-access";
+import { DEFAULT_AUDIO_ENABLED, DEFAULT_VIDEO_ENABLED } from "@/models/preview";
 
 const formSchema = z.object({
   name: z
@@ -69,8 +70,8 @@ function JoinForm(props: { onSuccess: () => void }) {
   );
 }
 export default function Preview(props: { onNextStep: () => void }) {
-  const [muted, setMuted] = useState(true);
-  const [videoEnable, setVideoEnable] = useState(true);
+  const [muted, setMuted] = useState(DEFAULT_AUDIO_ENABLED);
+  const [videoEnable, setVideoEnable] = useState(DEFAULT_VIDEO_ENABLED);
 
   const { stream, hasAccessAudio, hasAccessVideo } = useStream();
 

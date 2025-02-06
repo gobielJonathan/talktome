@@ -3,9 +3,17 @@ import ReactPlayer from "react-player";
 
 import Image from "next/image";
 import { Team } from "@/models/data";
-// import getAspectRatioStyle from "@/lib/get-aspect-ration-style";
+import { AspectRatio } from "./ui/aspect-ratio";
+import clsx from "clsx";
+import { memo } from "react";
 
-export default function Player(props:Omit<Team,"peerId"> & {isMe: boolean}) {
+function Player(
+  props: Omit<Team, "peerId"> & {
+    isMe: boolean;
+    layout?: "ordinary" | "highlight";
+  }
+) {
+  const { layout = "ordinary" } = props;
   return (
     <div
       className="bg-slate-800 h-full"
@@ -16,11 +24,11 @@ export default function Player(props:Omit<Team,"peerId"> & {isMe: boolean}) {
         overflow: "hidden",
       }}
     >
-      <div className="absolute bottom-1 left-2">
+      <div className="absolute z-10 bottom-1 left-2">
         <span className="text-white capitalize">{props.username}</span>
       </div>
       {props.muted && (
-        <div className="absolute top-3 right-3">
+        <div className="absolute z-10 top-3 right-3">
           <MicOff size={16} color="white" />
         </div>
       )}
@@ -36,13 +44,20 @@ export default function Player(props:Omit<Team,"peerId"> & {isMe: boolean}) {
           display: props.video ? "none" : "block", // Hide video when disabled
         }}
       >
-        <Image
-          alt="user avatar"
-          src={`https://avatar.iran.liara.run/username?username=${props.username}`}
-          width={128}
-          height={128}
-          loading="eager"
-        />
+        <div
+          className={clsx("w-32", {
+            "w-16": layout === "highlight" && !props.pinned,
+          })}
+        >
+          <AspectRatio ratio={1 / 1}>
+            <Image
+              alt="user avatar"
+              src={`https://avatar.iran.liara.run/username?username=${props.username}`}
+              fill
+              priority
+            />
+          </AspectRatio>
+        </div>
       </div>
       <ReactPlayer
         playsinline
@@ -57,10 +72,14 @@ export default function Player(props:Omit<Team,"peerId"> & {isMe: boolean}) {
           left: 0,
           display: props.video ? "block" : "none", // Hide video when disabled
         }}
-        wrapper={props => <div className="aspect-[16/7]">
-          <div {...props} className=""></div>
-          </div>}
+        wrapper={(props) => (
+          <div className="aspect-[16/7]">
+            <div {...props} className=""></div>
+          </div>
+        )}
       />
     </div>
   );
 }
+
+export default memo(Player);
