@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 import next from "next";
 import { Server } from "socket.io";
@@ -22,7 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const dev = process.env.NODE_ENV !== "production";
-console.log('process.env.NODE_ENV ', process.env.NODE_ENV, {dev})
+console.log("process.env.NODE_ENV ", process.env.NODE_ENV, { dev });
 const hostname = "0.0.0.0";
 const port = 3000;
 
@@ -30,14 +30,17 @@ const app = next({ dev, hostname, port, experimentalHttpsServer: true });
 const handler = app.getRequestHandler();
 
 app.prepare().then(() => {
-  const httpsOptions = {
-    key: readFileSync(join(__dirname, ".ssl/localhost-key.pem")),
-    cert: readFileSync(join(__dirname, ".ssl/localhost.pem")),
-  };
+  const httpServer = (function () {
+    if (dev) {
+      const httpsOptions = {
+        key: readFileSync(join(__dirname, ".ssl/localhost-key.pem")),
+        cert: readFileSync(join(__dirname, ".ssl/localhost.pem")),
+      };
 
-  const httpServer = dev
-    ? createHttpsServer(httpsOptions, handler)
-    : createHttpServer(handler);
+      return createHttpsServer(httpsOptions, handler);
+    }
+    return createHttpServer(handler);
+  })();
 
   const io = new Server(httpServer);
 
@@ -100,6 +103,6 @@ app.prepare().then(() => {
       process.exit(1);
     })
     .listen(port, () => {
-      console.log(`> Ready on https://${hostname}:${port}`);
+      console.log(`> Ready on ${dev ? 'https' : "http"}://${hostname}:${port}`);
     });
 });
