@@ -141,7 +141,7 @@ export default function Preview(props: { onNextStep: () => void }) {
                 Camera is starting
               </div>
             )}
-            {!videoEnable && hasAccessVideo && (
+            {!videoEnable && hasAccessVideo && stream && (
               <div
                 style={{
                   position: "absolute",
