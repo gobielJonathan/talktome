@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "npx esbuild server.ts --outfile=build/server.js --format=esm --platform=node --bundle --loader:.ts=ts",
-    "build": "next build",
-    "start": "NODE_ENV=production node server.js",
+    "build": "next build && cp .env.production .env",
+    "start": "node server.js --env-file=.env.production",
     "build:server": "npx esbuild server.ts --outfile=server.js --format=esm --platform=node --bundle --loader:.ts=ts",
     "lint": "next lint"
   },
@@ -20,6 +20,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
+    "dotenv": "^16.4.7",
     "lodash": "^4.17.21",
     "lucide-react": "^0.474.0",
     "next": "15.1.6",
@@ -43,6 +44,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-slick": "^0.23.13",
+    "cross-env": "^7.0.3",
     "esbuild": "^0.24.2",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
