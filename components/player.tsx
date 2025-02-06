@@ -46,7 +46,7 @@ function Player(
       >
         <div
           className={clsx("w-32", {
-            "w-16": layout === "highlight" && !props.pinned,
+            "!w-16": layout === "highlight" && !props.pinned,
           })}
         >
           <AspectRatio ratio={1 / 1}>
