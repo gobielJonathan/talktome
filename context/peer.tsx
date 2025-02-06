@@ -9,7 +9,7 @@ import {
 import { useSocket } from "./socket";
 import Peer from "peerjs";
 import { useParams } from "next/navigation";
-import { CONFIG_NAME } from "@/models/storage";
+import { getUsername } from "@/models/preview";
 
 interface PeerContext {
   peer?: Peer;
@@ -42,7 +42,7 @@ export const PeerProvider = ({ children }: { children: ReactNode }) => {
     const _peer = new Peer();
     _peer.on("open", (id) => {
       socket?.emit("join-room", roomId, id, {
-        username: localStorage.getItem(CONFIG_NAME) ?? "Jhon Doe",
+        username: getUsername(),
       });
       setMyPeerId(id);
     });
