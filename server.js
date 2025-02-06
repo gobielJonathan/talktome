@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import next from "next";
 import { Server } from "socket.io";
 import { createServer as createHttpsServer } from "node:https";
@@ -22,7 +20,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const dev = process.env.NODE_ENV !== "production";
-console.log("process.env.NODE_ENV ", process.env.NODE_ENV, { dev });
 const hostname = "0.0.0.0";
 const port = 3000;
 

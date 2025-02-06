@@ -14,7 +14,7 @@ export default function RoomLayout(props: Props) {
 
   const highlightTeams = Object.values(teams).filter((team) => team.pinned);
 
-  if (highlightTeams.length > 0 && Object.values(teams).length == 2) {
+  if (highlightTeams.length > 0) {
     const highlightTeamsId = highlightTeams.map((team) => team.peerId);
 
     const hightlightedTeams: Team[] = Object.entries(props.teams)

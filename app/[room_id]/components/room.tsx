@@ -13,16 +13,14 @@ import {
   CameraOff,
   Monitor,
   PhoneOff,
-  X,
 } from "lucide-react";
 import cloneDeep from "lodash/cloneDeep";
 import dayjs from "dayjs";
 
-import { getScreenSharing, getVideoSharing } from "@/lib/sharing";
+import { getScreenSharing } from "@/lib/sharing";
 import { useSocket } from "@/context/socket";
 import { useStream } from "@/context/stream";
 import { Team, Teams } from "@/models/data";
-import { CONFIG_NAME } from "@/models/storage";
 import { usePeer } from "@/context/peer";
 import RoomLayout from "./room-layout";
 import SheetInfo from "./sheets/info";
@@ -40,7 +38,7 @@ export default function Room() {
   const { socket } = useSocket();
   const { myPeerId, peer } = usePeer();
 
-  const { stream, setStream } = useStream();
+  const { stream } = useStream();
   const shareScreenPeer = useRef<Peer | null>(null);
   const screenStream = useRef<MediaStream | null>(null);
 
@@ -245,6 +243,7 @@ export default function Room() {
       return withoutShareScreen;
     });
     screenStream.current.getTracks().forEach((track) => track.stop());
+    screenStream.current = null;
     shareScreenPeer.current?.destroy();
     socket?.emit("user-leave", shareScreePeerId, roomId);
   };
@@ -252,15 +251,17 @@ export default function Room() {
   const handleShareScreen = async () => {
     if (!myPeerId) return;
 
+    if (screenStream.current) return;
+
     const _screenStream = await getScreenSharing();
     if (!_screenStream) return;
     screenStream.current = _screenStream;
 
     const shareScreenName = getUsername() + " Screen";
 
-    shareScreenPeer.current = new Peer(`${myPeerId}-screen`);
-    shareScreenPeer.current.on("open", (shareScreePeerId) => {
-
+    const shareScreePeerId = `${myPeerId}-screen`;
+    shareScreenPeer.current = new Peer(shareScreePeerId);
+    shareScreenPeer.current.on("open", () => {
       setTeams((prev) => ({
         ...prev,
         [shareScreePeerId]: {
@@ -292,15 +293,14 @@ export default function Room() {
     });
   };
 
-  const onToggleUserPin= (team: Team) => {
-
+  const onToggleUserPin = (team: Team) => {
     setTeams((prev) => {
       const _prev = cloneDeep(prev);
       _prev[team.peerId].pinned = !_prev[team.peerId].pinned;
       return _prev;
     });
-    socket?.emit("user-toggle-highlight", team.peerId, roomId); 
-  }
+    socket?.emit("user-toggle-highlight", team.peerId, roomId);
+  };
 
   //get the player config ( playing and muted )
   const { muted = getMutedValue(), video = getVideoValue() } =
@@ -339,7 +339,7 @@ export default function Room() {
           </button>
           <button
             className={clsx("rounded-full hover:bg-gray-600 bg-gray-700 p-2", {
-              "bg-blue-500 hover:bg-blue-400": isCurrentUserShareScreen,
+              "!bg-blue-500 !hover:bg-blue-400": isCurrentUserShareScreen,
             })}
             onClick={handleShareScreen}
           >
@@ -356,7 +356,10 @@ export default function Room() {
           <SheetInfo>
             <Info color="white" />
           </SheetInfo>
-          <SheetMember teams={Object.values(teams)} onToggleUserPin={onToggleUserPin}>
+          <SheetMember
+            teams={Object.values(teams)}
+            onToggleUserPin={onToggleUserPin}
+          >
             <CircleUser color="white" />
           </SheetMember>
           <SheetChat teams={teams}>
