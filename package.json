@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --experimental-strip-types server.ts",
+    "dev": "npx esbuild server.ts --outfile=build/server.js --format=esm --platform=node --bundle --loader:.ts=ts",
     "build": "next build",
-    "start": "NODE_ENV=production node --experimental-strip-types server.ts",
+    "start": "NODE_ENV=production node server.js",
+    "build:server": "npx esbuild server.ts --outfile=server.js --format=esm --platform=node --bundle --loader:.ts=ts",
     "lint": "next lint"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-slick": "^0.23.13",
+    "esbuild": "^0.24.2",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
     "postcss": "^8",

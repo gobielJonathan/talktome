@@ -52,8 +52,8 @@ export default function Home() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>
-                  <button onClick={startInstantMeeting}>
+                <DropdownMenuLabel onClick={startInstantMeeting}>
+                  <button >
                     Start instant meeting
                   </button>
                 </DropdownMenuLabel>

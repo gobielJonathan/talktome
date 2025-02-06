@@ -10,11 +10,9 @@ import {
   USER_LEAVE_EVENT,
   USER_TOGGLE_AUDIO_EVENT,
   USER_TOGGLE_VIDEO_EVENT,
-  type ListenerServerEvent,
-  type EmitterServerEvent,
   USER_SEND_CHAT_EVENT,
   USER_TOGGLE_HIGHLIGHT_EVENT,
-} from "./models/socket.ts";
+} from "./models/socket.js";
 
 import { fileURLToPath } from "url";
 
@@ -38,7 +36,7 @@ app.prepare().then(() => {
     ? createHttpsServer(httpsOptions, handler)
     : createHttpServer(handler);
 
-  const io = new Server<ListenerServerEvent, EmitterServerEvent>(httpServer);
+  const io = new Server(httpServer);
 
   io.on("connection", (socket) => {
     console.log("socket connected");

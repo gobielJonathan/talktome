@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Preview from "./components/preview";
-import Room from "./components/room";
 import { PeerProvider } from "@/context/peer";
+import dynamic from "next/dynamic";
+
+const  Preview = dynamic(() => import("./components/preview"), {ssr: false});
+const  Room = dynamic(() => import("./components/room"), {ssr: false});
 
 export default function Page() {
   const [step, setStep] = useState(1);

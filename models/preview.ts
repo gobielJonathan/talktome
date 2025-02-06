@@ -20,5 +20,5 @@ export const getVideoValue = () =>
 
 export const getUsername = () =>
   localStorage.getItem(CONFIG_NAME)
-    ? localStorage.getItem(CONFIG_NAME) ||  DEFAULT_NAME
+    ? localStorage.getItem(CONFIG_NAME) || DEFAULT_NAME
     : DEFAULT_NAME;
