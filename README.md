@@ -1,8 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TalkToMe - Google Meet Replica
 
-## Getting Started
+TalkToMe is a web application designed to replicate the functionality of Google Meet, but without the 1-hour meeting time limitation. This app allows users to conduct meetings without worrying about time constraints, providing a seamless and uninterrupted communication experience.
 
-First, run the development server:
+## Features
+
+- Unlimited meeting duration
+- High-quality video and audio
+- Screen sharing capabilities
+- Real-time chat
+- Easy to use interface
+
+## Technologies Used
+
+- Next.js
+- React
+- WebRTC
+- Socket.io
+
+## Installation
+
+To get started with TalkToMe, clone the repository and install the dependencies:
+
+```bash
+git clone https://github.com/yourusername/talktome.git
+cd talktome
+pnpm install
+```
+
+## Usage
+
+Run the development server:
 
 ```bash
 npm run dev
@@ -14,23 +41,12 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to start using TalkToMe.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Contributing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+We welcome contributions to improve TalkToMe. Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/yourusername/talktome).
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
