@@ -22,7 +22,7 @@ TalkToMe is a web application designed to replicate the functionality of Google 
 To get started with TalkToMe, clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/yourusername/talktome.git
+git clone https://github.com/gobielJonathan/talktome.git
 cd talktome
 pnpm install
 ```
@@ -41,11 +41,11 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to start using TalkToMe.
+Open [https://0.0.0.0:3000](https://0.0.0.0:3000) with your browser to start using TalkToMe.
 
 ## Contributing
 
-We welcome contributions to improve TalkToMe. Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/yourusername/talktome).
+We welcome contributions to improve TalkToMe. Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/gobielJonathan/talktome/pulls).
 
 ## License
 
