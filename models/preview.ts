@@ -22,3 +22,12 @@ export const getUsername = () =>
   localStorage.getItem(CONFIG_NAME)
     ? localStorage.getItem(CONFIG_NAME) || DEFAULT_NAME
     : DEFAULT_NAME;
+
+export const setMutedValue = (value: boolean) =>
+  localStorage.setItem(CONFIG_AUDIO_ENABLED, value.toString());
+
+export const setVideoValue = (value: boolean) =>
+  localStorage.setItem(CONFIG_VIDEO_ENABLED, value.toString());
+
+export const setUsername = (value: boolean) =>
+  localStorage.setItem(CONFIG_NAME, value.toString());

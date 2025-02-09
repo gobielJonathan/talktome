@@ -27,7 +27,7 @@ import SheetInfo from "./sheets/info";
 import SheetMember from "./sheets/member";
 import SheetChat from "./sheets/chat";
 import useUIListener from "@/hooks/use-ui-listener";
-import { getMutedValue, getUsername, getVideoValue } from "@/models/preview";
+import { getMutedValue, getUsername, getVideoValue, setMutedValue, setVideoValue } from "@/models/preview";
 import clsx from "clsx";
 
 export const dynamic = "force-dynamic";
@@ -57,8 +57,17 @@ export default function Room() {
 
     const handleUserConnected = (
       userId: string,
-      additionalData?: Record<string, string>
+      additionalData?: Record<string, unknown>
     ) => {
+      console.log("call", {
+        userId,
+        metadata: {
+          username: getUsername(),
+          muted: getMutedValue(),
+          video: getVideoValue(),
+        },
+      });
+
       const call = peer.call(userId, stream, {
         metadata: {
           username: getUsername(),
@@ -67,15 +76,15 @@ export default function Room() {
         },
       });
 
-      call.on("stream", (remoteStream) => {
+      const handleCallStream = (remoteStream: MediaStream) => {
         setTeams((prev) => ({
           ...prev,
           [userId]: {
             url: remoteStream,
             peerId: userId,
-            muted: getMutedValue(),
-            video: getVideoValue(),
-            username: additionalData?.username ?? "Jhon Doe",
+            muted: Boolean(additionalData?.muted ?? getMutedValue()),
+            video: Boolean(additionalData?.video ?? getVideoValue()),
+            username: String(additionalData?.username ?? "Jhon Doe"),
             pinned: false,
           },
         }));
@@ -84,6 +93,11 @@ export default function Room() {
           ...prev,
           [userId]: call,
         }));
+      };
+
+      call.on("stream", handleCallStream);
+      unsubscribe(() => {
+        call.off("stream", handleCallStream);
       });
     };
 
@@ -202,26 +216,28 @@ export default function Room() {
   }, []);
 
   const toggleAudio = () => {
-    if (!myPeerId) return;
+    if (!myPeerId || !socket) return;
 
     setTeams((prev) => {
       const _prev = cloneDeep(prev);
       _prev[myPeerId].muted = !_prev[myPeerId].muted;
+      setMutedValue(_prev[myPeerId].muted);
       return _prev;
     });
 
-    socket?.emit("user-toggle-audio", myPeerId, roomId);
+    socket.emit("user-toggle-audio", myPeerId, roomId);
   };
 
   const toggleVideo = () => {
-    if (!myPeerId) return;
+    if (!myPeerId || !socket) return;
 
     setTeams((prev) => {
       const _prev = cloneDeep(prev);
       _prev[myPeerId].video = !_prev[myPeerId].video;
+      setVideoValue(_prev[myPeerId].video);
       return _prev;
     });
-    socket?.emit("user-toggle-video", myPeerId, roomId);
+    socket.emit("user-toggle-video", myPeerId, roomId);
   };
 
   const handleUserLeave = () => {
@@ -234,7 +250,7 @@ export default function Room() {
   };
 
   const handleUserUnshare = () => {
-    if (!shareScreenPeer.current || !screenStream.current) return;
+    if (!shareScreenPeer.current || !screenStream.current || !socket) return;
 
     const shareScreePeerId = shareScreenPeer.current.id;
     setTeams((prev) => {
@@ -245,11 +261,11 @@ export default function Room() {
     screenStream.current.getTracks().forEach((track) => track.stop());
     screenStream.current = null;
     shareScreenPeer.current?.destroy();
-    socket?.emit("user-leave", shareScreePeerId, roomId);
+    socket.emit("user-leave", shareScreePeerId, roomId);
   };
 
   const handleShareScreen = async () => {
-    if (!myPeerId) return;
+    if (!myPeerId || !socket) return;
 
     if (screenStream.current) return;
 
@@ -294,12 +310,14 @@ export default function Room() {
   };
 
   const onToggleUserPin = (team: Team) => {
+    if(!socket) return;
+
     setTeams((prev) => {
       const _prev = cloneDeep(prev);
       _prev[team.peerId].pinned = !_prev[team.peerId].pinned;
       return _prev;
     });
-    socket?.emit("user-toggle-highlight", team.peerId, roomId);
+    socket.emit("user-toggle-highlight", team.peerId, roomId);
   };
 
   //get the player config ( playing and muted )

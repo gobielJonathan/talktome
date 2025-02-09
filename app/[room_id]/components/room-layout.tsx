@@ -25,10 +25,7 @@ export default function RoomLayout(props: Props) {
 
     return (
       <div
-        className="grid gap-2 p-4 flex-grow w-full"
-        style={{
-          gridTemplateColumns: "1fr 200px",
-        }}
+        className="grid gap-2 p-4 flex-grow w-full grid-rows-[1fr_200px] lg:grid-rows-none lg:grid-cols-[1fr_200px]"
       >
         <Highlighted highlighted={hightlightedTeams} teams={_teams} />
       </div>
@@ -43,7 +40,7 @@ export default function RoomLayout(props: Props) {
       }}
     >
       {Object.entries(teams).map(([id, team]) => {
-        const { muted, video, url, username } = team;
+        const { muted, video, url, username, pinned } = team;
         return (
           <Player
             key={id}
@@ -52,6 +49,7 @@ export default function RoomLayout(props: Props) {
             video={video}
             url={url}
             username={username}
+            pinned={pinned}
           />
         );
       })}

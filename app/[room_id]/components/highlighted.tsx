@@ -37,17 +37,18 @@ export default function Highlighted(props: Props) {
         </div>
       </div>
       <div className="px-2 max-h-96">
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-row lg:flex-col gap-4">
           {props.teams.map((team, index) => (
-            <div key={index} className="h-[152px]">
+            <div key={index} className="h-[152px] w-40 lg:w-full">
               <Player
+                layout="highlight"
                 url={team.url}
                 muted={team.muted}
                 isMe={team.peerId === myPeerId}
                 video={team.video}
                 username={team.username}
-                layout="highlight"
-              />
+                pinned={team.pinned}
+                />
             </div>
           ))}
         </div>

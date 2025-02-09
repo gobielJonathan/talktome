@@ -35,7 +35,7 @@ export interface EmitterClientEvent {
   [JOIN_ROOM_EVENT]: (
     roomId: string,
     userId: string,
-    additionalData?: Record<string, string>
+    additionalData?: Record<string, unknown>
   ) => void;
   [USER_TOGGLE_HIGHLIGHT_EVENT]: (userId: string, roomId: string) => void;
   [USER_SEND_CHAT_EVENT]: (
