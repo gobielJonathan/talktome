@@ -14,7 +14,7 @@ export default function Highlighted(props: Props) {
 
   return (
     <>
-      <div className="highlight">
+      <div className="highlight flex-1">
         <div
           className="grid gap-4 h-full"
           style={{
@@ -36,10 +36,10 @@ export default function Highlighted(props: Props) {
           ))}
         </div>
       </div>
-      <div className="px-2 max-h-96">
+      <div className="px-2 max-h-96 basis-52">
         <div className="flex flex-row lg:flex-col gap-4">
           {props.teams.map((team, index) => (
-            <div key={index} className="h-[152px] w-40 lg:w-full">
+            <div key={index} className="h-32 lg:h-[152px] w-40 lg:w-full">
               <Player
                 layout="highlight"
                 url={team.url}

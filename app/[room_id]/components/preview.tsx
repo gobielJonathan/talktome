@@ -100,8 +100,8 @@ export default function Preview(props: { onNextStep: () => void }) {
           talktome
         </h2>
       </header>
-      <div className="grid grid-cols-12 px-16 h-full place-items-center">
-        <div className="col-span-12 lg:col-span-8 w-full">
+      <div className="flex px-4 gap-4 justify-center lg:items-center h-full flex-col lg:flex-row">
+        <div className="w-full">
           <div
             style={{
               position: "relative",
@@ -222,7 +222,7 @@ export default function Preview(props: { onNextStep: () => void }) {
             </div>
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-4 w-full px-14">
+        <div className="basis-auto lg:basis-2/3 w-full px-14">
           <h4 className="text-2xl font-semibold tracking-tigh text-center">
             Ready to join?
           </h4>

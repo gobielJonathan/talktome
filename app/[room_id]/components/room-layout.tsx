@@ -24,9 +24,7 @@ export default function RoomLayout(props: Props) {
     const _teams = Object.values(teams).filter((team) => !team.pinned);
 
     return (
-      <div
-        className="grid gap-2 p-4 flex-grow w-full grid-rows-[1fr_200px] lg:grid-rows-none lg:grid-cols-[1fr_200px]"
-      >
+      <div className="flex flex-col lg:flex-row gap-2 p-4 grow">
         <Highlighted highlighted={hightlightedTeams} teams={_teams} />
       </div>
     );
