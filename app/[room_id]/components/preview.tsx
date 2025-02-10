@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import getAspectRatioStyle from "@/lib/get-aspect-ration-style";
+
 import {
   CONFIG_AUDIO_ENABLED,
   CONFIG_NAME,
@@ -37,7 +37,10 @@ function JoinForm(props: { onSuccess: () => void }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: typeof window === 'undefined' ? '' : localStorage.getItem(CONFIG_NAME) || "",
+      name:
+        typeof window === "undefined"
+          ? ""
+          : localStorage.getItem(CONFIG_NAME) || "",
     },
   });
 
@@ -76,19 +79,19 @@ export default function Preview(props: { onNextStep: () => void }) {
   const { stream, hasAccessAudio, hasAccessVideo } = useStream();
 
   const toggleAudio = () => {
-    if(hasAccessAudio)
-    setMuted((prev) => {
-      localStorage.setItem(CONFIG_AUDIO_ENABLED, String(!prev));
-      return !prev;
-    });
+    if (hasAccessAudio)
+      setMuted((prev) => {
+        localStorage.setItem(CONFIG_AUDIO_ENABLED, String(!prev));
+        return !prev;
+      });
   };
 
   const toggleVideo = () => {
-    if(hasAccessVideo)
-    setVideoEnable((prev) => {
-      localStorage.setItem(CONFIG_VIDEO_ENABLED, String(!prev));
-      return !prev;
-    });
+    if (hasAccessVideo)
+      setVideoEnable((prev) => {
+        localStorage.setItem(CONFIG_VIDEO_ENABLED, String(!prev));
+        return !prev;
+      });
   };
 
   const hasFullAccess = hasAccessAudio && hasAccessVideo;
@@ -102,15 +105,7 @@ export default function Preview(props: { onNextStep: () => void }) {
       </header>
       <div className="flex px-4 gap-4 justify-center lg:items-center h-full flex-col lg:flex-row">
         <div className="w-full">
-          <div
-            style={{
-              position: "relative",
-              paddingTop: getAspectRatioStyle(16, 9),
-              backgroundColor: "black",
-              borderRadius: 10,
-              overflow: "hidden",
-            }}
-          >
+          <div className="relative overflow-hidden aspect-video rounded-[10px]">
             {stream && (
               <ReactPlayer
                 width="100%"
@@ -128,46 +123,18 @@ export default function Preview(props: { onNextStep: () => void }) {
               />
             )}
             {hasFullAccess && !stream && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  color: "white",
-                  fontSize: "20px",
-                }}
-              >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xl">
                 Camera is starting
               </div>
             )}
             {!videoEnable && hasAccessVideo && stream && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  color: "white",
-                  fontSize: "20px",
-                }}
-              >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xl">
                 Camera is off
               </div>
             )}
 
             {(!hasAccessVideo || (!hasAccessAudio && !hasAccessVideo)) && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  color: "white",
-                  fontSize: "20px",
-                }}
-                className="z-10"
-              >
+              <div className="z-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xl">
                 <PromptAccess />
               </div>
             )}
@@ -178,7 +145,7 @@ export default function Preview(props: { onNextStep: () => void }) {
                   "rounded-full border border-[white] p-2 relative",
                   {
                     "bg-red-500": muted,
-                    'hover:bg-[rgba(0,0,0,.4)]': !muted
+                    "hover:bg-[rgba(0,0,0,.4)]": !muted,
                   }
                 )}
                 onClick={toggleAudio}
@@ -199,7 +166,7 @@ export default function Preview(props: { onNextStep: () => void }) {
                   "rounded-full border border-[white] p-2 relative",
                   {
                     "bg-red-500": !videoEnable || !hasAccessVideo,
-                    'hover:bg-[rgba(0,0,0,.4)]': videoEnable && hasAccessVideo
+                    "hover:bg-[rgba(0,0,0,.4)]": videoEnable && hasAccessVideo,
                   }
                 )}
                 onClick={toggleVideo}

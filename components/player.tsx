@@ -7,23 +7,16 @@ import { AspectRatio } from "./ui/aspect-ratio";
 import clsx from "clsx";
 import { memo } from "react";
 
-function Player(
-  props: Omit<Team, "peerId"> & {
-    isMe: boolean;
-    layout?: "ordinary" | "highlight";
-  }
-) {
+type Props = Omit<Team, "peerId"> & {
+  isMe: boolean;
+  layout?: "ordinary" | "highlight";
+};
+
+function Player(props: Props) {
   const { layout = "ordinary" } = props;
+
   return (
-    <div
-      className="bg-slate-800 h-full"
-      style={{
-        position: "relative",
-        // paddingTop: getAspectRatioStyle(16, 9),
-        borderRadius: 10,
-        overflow: "hidden",
-      }}
-    >
+    <div className="bg-slate-800 relative rounded-[10px] overflow-hidden">
       <div className="absolute z-10 bottom-1 left-2">
         <span className="text-white capitalize">{props.username}</span>
       </div>
@@ -34,15 +27,13 @@ function Player(
       )}
 
       <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          color: "white",
-          fontSize: "20px",
-          display: props.video ? "none" : "block", // Hide video when disabled
-        }}
+        className={clsx(
+          "absolute top-1/2 left-1/2 text-white -translate-x-1/2 -translate-y-1/2 text-xl",
+          {
+            hidden: props.video,
+            block: !props.video,
+          }
+        )}
       >
         <div
           className={clsx("w-32", {
@@ -51,10 +42,10 @@ function Player(
         >
           <AspectRatio ratio={1 / 1}>
             <Image
-              alt="user avatar"
-              src={`https://avatar.iran.liara.run/username?username=${props.username}`}
               fill
-              priority
+              alt={`user avatar ${props.username}`}
+              src={`https://avatar.iran.liara.run/username?username=${props.username}`}
+              fetchPriority="high"
             />
           </AspectRatio>
         </div>
@@ -70,10 +61,12 @@ function Player(
           position: "absolute",
           top: 0,
           left: 0,
+          width: "100%",
+          height: "100%",
           display: props.video ? "block" : "none", // Hide video when disabled
         }}
         wrapper={(props) => (
-          <div className="aspect-[16/7]">
+          <div className="aspect-video">
             <div {...props} className=""></div>
           </div>
         )}
