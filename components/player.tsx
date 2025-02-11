@@ -1,11 +1,11 @@
 import { MicOff } from "lucide-react";
 import ReactPlayer from "react-player";
-
-import Image from "next/image";
-import { Team } from "@/models/data";
-import { AspectRatio } from "./ui/aspect-ratio";
 import clsx from "clsx";
 import { memo } from "react";
+import Image from "next/image";
+
+import { Team } from "@/models/data";
+import { AspectRatio } from "./ui/aspect-ratio";
 
 type Props = Omit<Team, "peerId"> & {
   isMe: boolean;
@@ -16,9 +16,9 @@ function Player(props: Props) {
   const { layout = "ordinary" } = props;
 
   return (
-    <div className="bg-slate-800 relative rounded-[10px] overflow-hidden">
+    <div className="bg-slate-800 relative rounded-[10px] overflow-hidden w-full h-full">
       <div className="absolute z-10 bottom-1 left-2">
-        <span className="text-white capitalize">{props.username}</span>
+        <span className="text-white text-sm capitalize">{props.username}</span>
       </div>
       {props.muted && (
         <div className="absolute z-10 top-3 right-3">
@@ -59,15 +59,12 @@ function Player(props: Props) {
         muted={props.isMe ? true : props.muted}
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
+          objectFit: "cover",
           display: props.video ? "block" : "none", // Hide video when disabled
         }}
         wrapper={(props) => (
-          <div className="aspect-video">
-            <div {...props} className=""></div>
+          <div className="w-full h-full">
+            <div {...props}></div>
           </div>
         )}
       />

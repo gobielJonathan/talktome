@@ -307,7 +307,7 @@ export default function Room() {
         shareScreenPeer.current?.call(peer, _screenStream, {
           metadata: {
             username: shareScreenName,
-            muted: true,
+            muted: false,
             video: true,
             pinned: true,
           },
@@ -315,10 +315,14 @@ export default function Room() {
       });
     });
 
-    const [track] = _screenStream.getTracks();
-    track.addEventListener("ended", handleUserUnshare);
+    _screenStream.getTracks().forEach((track) => {
+      track.addEventListener("ended", handleUserUnshare);
+    })
+    
     unsubscribe(() => {
+      _screenStream.getTracks().forEach((track) => {
       track.removeEventListener("ended", handleUserUnshare);
+      })
     });
   };
 
@@ -345,11 +349,11 @@ export default function Room() {
         <p className="text-white font-semibold">{roomId}</p>
       </header>
 
-      <div className="grow">
+      <div className="flex-1">
         <RoomLayout teams={teams} />
       </div>
 
-      <div className="grid grid-cols-12 py-4 px-6">
+      <div className="grid grid-cols-12 py-4 px-6 shrink-0">
         <div className="col-span-3 hidden xl:inline-flex items-center">
           <p className="text-white font-semibold">
             {dayjs(time).format("HH:mm")}

@@ -105,7 +105,7 @@ export default function Preview(props: { onNextStep: () => void }) {
       </header>
       <div className="flex px-4 gap-4 justify-center lg:items-center h-full flex-col lg:flex-row">
         <div className="w-full">
-          <div className="relative overflow-hidden aspect-video rounded-[10px]">
+          <div className="relative overflow-hidden aspect-video rounded-[10px] bg-black">
             {stream && (
               <ReactPlayer
                 width="100%"

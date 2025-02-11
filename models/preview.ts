@@ -31,3 +31,10 @@ export const setVideoValue = (value: boolean) =>
 
 export const setUsername = (value: boolean) =>
   localStorage.setItem(CONFIG_NAME, value.toString());
+
+
+export const MAX_TEAMS_HIGHLIGHTED_PER_PAGE = 6;
+
+export const MAX_TEAMS_GRID_PER_PAGE = 9;
+
+export const MAX_TEAMS_HIGHLIGHT = 4
