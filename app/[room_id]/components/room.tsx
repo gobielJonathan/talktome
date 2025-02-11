@@ -35,6 +35,7 @@ import {
   setVideoValue,
 } from "@/models/preview";
 import clsx from "clsx";
+import { createShareScreenPeerId } from "@/models/peer";
 
 export const dynamic = "force-dynamic";
 
@@ -288,7 +289,7 @@ export default function Room() {
 
     const shareScreenName = getUsername() + " Screen";
 
-    const shareScreePeerId = `${myPeerId}-screen`;
+    const shareScreePeerId = createShareScreenPeerId(myPeerId);
     shareScreenPeer.current = new Peer(shareScreePeerId);
     shareScreenPeer.current.on("open", () => {
       setTeams((prev) => ({

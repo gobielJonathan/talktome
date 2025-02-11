@@ -9,12 +9,11 @@ import { usePeer } from "@/context/peer";
 import getVideoGrid from "@/lib/get-video-grid";
 import { MAX_TEAMS_GRID_PER_PAGE } from "@/models/preview";
 import { RoomSlider } from "./room-slider";
-
+import { createShareScreenPeerId } from "@/models/peer";
 
 interface Props {
   teams: Teams;
 }
-
 
 export default function RoomLayout(props: Props) {
   const { teams } = props;
@@ -22,14 +21,11 @@ export default function RoomLayout(props: Props) {
   const { myPeerId } = usePeer();
 
   const highlightTeams = Object.values(teams).filter((team) => team.pinned);
-  const unHighlightTeams = Object.values(teams).filter((team) => !team.pinned)
+  const unHighlightTeams = Object.values(teams).filter((team) => !team.pinned);
 
   if (highlightTeams.length > 0) {
     return (
-      <Highlighted
-        highlighted={highlightTeams}
-        teams={unHighlightTeams}
-      />
+      <Highlighted highlighted={highlightTeams} teams={unHighlightTeams} />
     );
   }
 
@@ -49,7 +45,10 @@ export default function RoomLayout(props: Props) {
                   <Player
                     key={id}
                     muted={muted}
-                    isMe={id === myPeerId}
+                    isMe={
+                      id === myPeerId ||
+                      id === createShareScreenPeerId(myPeerId ?? "")
+                    }
                     video={video}
                     url={url}
                     username={username}
@@ -80,7 +79,9 @@ export default function RoomLayout(props: Props) {
           <Player
             key={id}
             muted={muted}
-            isMe={id === myPeerId}
+            isMe={id === myPeerId || 
+              id === createShareScreenPeerId(myPeerId ?? "")
+            }
             video={video}
             url={url}
             username={username}
