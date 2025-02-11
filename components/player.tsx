@@ -1,31 +1,24 @@
 import { MicOff } from "lucide-react";
 import ReactPlayer from "react-player";
-
-import Image from "next/image";
-import { Team } from "@/models/data";
-import { AspectRatio } from "./ui/aspect-ratio";
 import clsx from "clsx";
 import { memo } from "react";
+import Image from "next/image";
 
-function Player(
-  props: Omit<Team, "peerId"> & {
-    isMe: boolean;
-    layout?: "ordinary" | "highlight";
-  }
-) {
+import { Team } from "@/models/data";
+import { AspectRatio } from "./ui/aspect-ratio";
+
+type Props = Omit<Team, "peerId"> & {
+  isMe: boolean;
+  layout?: "ordinary" | "highlight";
+};
+
+function Player(props: Props) {
   const { layout = "ordinary" } = props;
+
   return (
-    <div
-      className="bg-slate-800 h-full"
-      style={{
-        position: "relative",
-        // paddingTop: getAspectRatioStyle(16, 9),
-        borderRadius: 10,
-        overflow: "hidden",
-      }}
-    >
+    <div className="bg-slate-800 relative rounded-[10px] overflow-hidden w-full h-full">
       <div className="absolute z-10 bottom-1 left-2">
-        <span className="text-white capitalize">{props.username}</span>
+        <span className="text-white text-sm capitalize">{props.username}</span>
       </div>
       {props.muted && (
         <div className="absolute z-10 top-3 right-3">
@@ -34,15 +27,13 @@ function Player(
       )}
 
       <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          color: "white",
-          fontSize: "20px",
-          display: props.video ? "none" : "block", // Hide video when disabled
-        }}
+        className={clsx(
+          "absolute top-1/2 left-1/2 text-white -translate-x-1/2 -translate-y-1/2 text-xl",
+          {
+            hidden: props.video,
+            block: !props.video,
+          }
+        )}
       >
         <div
           className={clsx("w-32", {
@@ -51,10 +42,10 @@ function Player(
         >
           <AspectRatio ratio={1 / 1}>
             <Image
-              alt="user avatar"
-              src={`https://avatar.iran.liara.run/username?username=${props.username}`}
               fill
-              priority
+              alt={`user avatar ${props.username}`}
+              src={`https://avatar.iran.liara.run/username?username=${props.username}`}
+              fetchPriority="high"
             />
           </AspectRatio>
         </div>
@@ -68,13 +59,12 @@ function Player(
         muted={props.isMe ? true : props.muted}
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
+          objectFit: "cover",
           display: props.video ? "block" : "none", // Hide video when disabled
         }}
         wrapper={(props) => (
-          <div className="aspect-[16/7]">
-            <div {...props} className=""></div>
+          <div className="w-full h-full">
+            <div {...props}></div>
           </div>
         )}
       />

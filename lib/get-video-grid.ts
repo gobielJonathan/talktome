@@ -1,8 +1,12 @@
-const MAX_GRID_SIZE = 3;
-
 export default function getVideoGrid(length: number) {
-  if (length < MAX_GRID_SIZE) {
-    return `repeat(${length}, 1fr)`;
+  if (length === 1) {
+    return { col: 1, row: 1 };
   }
-  return `repeat(${MAX_GRID_SIZE}, 1fr)`;
+  if (length === 2) {
+    return { col: 2, row: 1 };
+  }
+  if (length >= 3 && length <= 6) {
+    return { col: 3, row: 2 };
+  }
+  return { col: 3, row: 3 };
 }

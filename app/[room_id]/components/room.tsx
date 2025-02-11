@@ -27,7 +27,13 @@ import SheetInfo from "./sheets/info";
 import SheetMember from "./sheets/member";
 import SheetChat from "./sheets/chat";
 import useUIListener from "@/hooks/use-ui-listener";
-import { getMutedValue, getUsername, getVideoValue, setMutedValue, setVideoValue } from "@/models/preview";
+import {
+  getMutedValue,
+  getUsername,
+  getVideoValue,
+  setMutedValue,
+  setVideoValue,
+} from "@/models/preview";
 import clsx from "clsx";
 
 export const dynamic = "force-dynamic";
@@ -59,15 +65,6 @@ export default function Room() {
       userId: string,
       additionalData?: Record<string, unknown>
     ) => {
-      console.log("call", {
-        userId,
-        metadata: {
-          username: getUsername(),
-          muted: getMutedValue(),
-          video: getVideoValue(),
-        },
-      });
-
       const call = peer.call(userId, stream, {
         metadata: {
           username: getUsername(),
@@ -75,6 +72,22 @@ export default function Room() {
           video: getVideoValue(),
         },
       });
+
+      /**
+       * @description if the user is sharing screen, share the screen to the new user
+       */
+      if (shareScreenPeer.current && screenStream.current) {
+        const shareScreenName = getUsername() + " Screen";
+
+        shareScreenPeer.current.call(userId, screenStream.current, {
+          metadata: {
+            username: shareScreenName,
+            muted: false,
+            video: true,
+            pinned : true
+          },
+        });
+      }
 
       const handleCallStream = (remoteStream: MediaStream) => {
         setTeams((prev) => ({
@@ -294,7 +307,7 @@ export default function Room() {
         shareScreenPeer.current?.call(peer, _screenStream, {
           metadata: {
             username: shareScreenName,
-            muted: true,
+            muted: false,
             video: true,
             pinned: true,
           },
@@ -302,15 +315,19 @@ export default function Room() {
       });
     });
 
-    const [track] = _screenStream.getTracks();
-    track.addEventListener("ended", handleUserUnshare);
+    _screenStream.getTracks().forEach((track) => {
+      track.addEventListener("ended", handleUserUnshare);
+    })
+    
     unsubscribe(() => {
+      _screenStream.getTracks().forEach((track) => {
       track.removeEventListener("ended", handleUserUnshare);
+      })
     });
   };
 
   const onToggleUserPin = (team: Team) => {
-    if(!socket) return;
+    if (!socket) return;
 
     setTeams((prev) => {
       const _prev = cloneDeep(prev);
@@ -327,14 +344,16 @@ export default function Room() {
   const isCurrentUserShareScreen = Boolean(teams[`${myPeerId}-screen`]);
 
   return (
-    <div className="bg-gray-900 flex flex-col h-full flex-wrap">
+    <div className="bg-gray-900 flex flex-col h-screen">
       <header className="inline-flex lg:hidden items-center py-2 px-6">
         <p className="text-white font-semibold">{roomId}</p>
       </header>
 
-      <RoomLayout teams={teams} />
+      <div className="flex-1">
+        <RoomLayout teams={teams} />
+      </div>
 
-      <div className="grid grid-cols-12 py-4 px-6">
+      <div className="grid grid-cols-12 py-4 px-6 shrink-0">
         <div className="col-span-3 hidden xl:inline-flex items-center">
           <p className="text-white font-semibold">
             {dayjs(time).format("HH:mm")}

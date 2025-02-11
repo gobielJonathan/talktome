@@ -1,11 +1,10 @@
 import Image from "next/image";
 import { ReactNode, useEffect, useState } from "react";
-import { Mic, MicOff, EllipsisVertical, Pin, PinOff } from "lucide-react";
+import { Mic, MicOff, EllipsisVertical, Pin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -17,8 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSocket } from "@/context/socket";
-import { useParams } from "next/navigation";
+import { MAX_TEAMS_HIGHLIGHT } from "@/models/preview";
 
 interface Props {
   children: ReactNode;
@@ -27,9 +25,6 @@ interface Props {
 }
 
 export default function SheetMember(props: Props) {
-  const roomId = String(useParams()?.room_id);
-  const { socket } = useSocket();
-
   const [teams, setTeams] = useState(props.teams);
 
   useEffect(() => {
@@ -43,6 +38,12 @@ export default function SheetMember(props: Props) {
   };
 
   const onPin = (team: Team) => {
+    const pinnedTeams = props.teams.filter((t) => t.pinned);
+    if (pinnedTeams.length >= MAX_TEAMS_HIGHLIGHT) {
+      console.log("max pinned teams reached");
+      return;
+    }
+
     props.onToggleUserPin(team);
   };
 
@@ -59,7 +60,10 @@ export default function SheetMember(props: Props) {
           <div className="flex flex-col gap-y-4 mt-4">
             {teams.length === 0 && <p>No results</p>}
             {teams.map((team) => (
-              <div key={team.peerId} className="flex w-full gap-x-3 items-center">
+              <div
+                key={team.peerId}
+                className="flex w-full gap-x-3 items-center"
+              >
                 <div>
                   <Image
                     alt="user avatar"
@@ -70,7 +74,7 @@ export default function SheetMember(props: Props) {
                   />
                 </div>
                 <div className="flex-1">
-                  <p className="text-lg">{team.username}</p>
+                  <p className="text-lg capitalize">{team.username}</p>
                 </div>
                 <div className="inline-flex items-center gap-x-4">
                   {team.muted ? <MicOff /> : <Mic />}
@@ -83,7 +87,12 @@ export default function SheetMember(props: Props) {
                         className="hover:cursor-pointer"
                         onClick={() => onPin(team)}
                       >
-                        <Pin /> {!team.pinned?  <span className="ml-2">Pin to screen</span> : <span className="ml-2">Unpin from screen</span>}
+                        <Pin />{" "}
+                        {!team.pinned ? (
+                          <span className="ml-2">Pin to screen</span>
+                        ) : (
+                          <span className="ml-2">Unpin from screen</span>
+                        )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

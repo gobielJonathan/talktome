@@ -1,43 +1,80 @@
-import { Team, Teams } from "@/models/data";
+import chunk from "lodash/chunk";
+import "glider-js/glider.min.css";
+
+import { Teams } from "@/models/data";
 import Highlighted from "./highlighted";
-import getVideoGrid from "@/lib/get-video-grid";
 import Player from "@/components/player";
+
 import { usePeer } from "@/context/peer";
+import getVideoGrid from "@/lib/get-video-grid";
+import { MAX_TEAMS_GRID_PER_PAGE } from "@/models/preview";
+import { RoomSlider } from "./room-slider";
+
 
 interface Props {
   teams: Teams;
 }
 
+
 export default function RoomLayout(props: Props) {
   const { teams } = props;
+
   const { myPeerId } = usePeer();
 
   const highlightTeams = Object.values(teams).filter((team) => team.pinned);
+  const unHighlightTeams = Object.values(teams).filter((team) => !team.pinned)
 
   if (highlightTeams.length > 0) {
-    const highlightTeamsId = highlightTeams.map((team) => team.peerId);
-
-    const hightlightedTeams: Team[] = Object.entries(props.teams)
-      .filter(([id]) => highlightTeamsId.includes(id))
-      .map(([_, team]) => team);
-
-    const _teams = Object.values(teams).filter((team) => !team.pinned);
-
     return (
-      <div className="flex flex-col lg:flex-row gap-2 p-4 grow">
-        <Highlighted highlighted={hightlightedTeams} teams={_teams} />
-      </div>
+      <Highlighted
+        highlighted={highlightTeams}
+        teams={unHighlightTeams}
+      />
     );
   }
 
+  const isMultiplePage = unHighlightTeams.length / MAX_TEAMS_GRID_PER_PAGE >= 1;
+  if (isMultiplePage) {
+    return (
+      <RoomSlider>
+        {chunk(unHighlightTeams, MAX_TEAMS_GRID_PER_PAGE).map((teams, idx) => {
+          return (
+            <div
+              className="grid gap-4 p-4 grid-cols-3 grid-rows-3 h-full"
+              key={idx}
+            >
+              {Object.entries(teams).map(([id, team]) => {
+                const { muted, video, url, username, pinned } = team;
+                return (
+                  <Player
+                    key={id}
+                    muted={muted}
+                    isMe={id === myPeerId}
+                    video={video}
+                    url={url}
+                    username={username}
+                    pinned={pinned}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
+      </RoomSlider>
+    );
+  }
+
+  const { col, row } = getVideoGrid(unHighlightTeams.length);
+
   return (
     <div
-      className="grid gap-2 items-center p-4 flex-grow"
+      className="grid gap-4 p-4 h-full"
       style={{
-        gridTemplateColumns: getVideoGrid(Object.keys(teams).length),
+        gridTemplateColumns: `repeat(${col}, 1fr)`,
+        gridTemplateRows: `repeat(${row}, 1fr)`,
       }}
     >
-      {Object.entries(teams).map(([id, team]) => {
+      {Object.entries(unHighlightTeams).map(([id, team]) => {
         const { muted, video, url, username, pinned } = team;
         return (
           <Player
