@@ -1,5 +1,6 @@
-import Player from "@/components/player";
 import chunk from "lodash/chunk";
+
+import Player from "@/components/player";
 
 import { Team } from "@/models/data";
 import { usePeer } from "@/context/peer";

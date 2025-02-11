@@ -1,5 +1,9 @@
-import { Input } from "@/components/ui/input";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { SendHorizonal } from "lucide-react";
+import dayjs from "dayjs";
+import { flushSync } from "react-dom";
+
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -9,13 +13,9 @@ import {
 } from "@/components/ui/sheet";
 import { useSocket } from "@/context/socket";
 import { Teams } from "@/models/data";
-import { ReactNode, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { usePeer } from "@/context/peer";
-import { CONFIG_NAME } from "@/models/storage";
-import { getUsername } from "@/models/preview";
-import dayjs from "dayjs";
-import { flushSync } from "react-dom";
+
 
 export default function SheetChat(props: {
   children: ReactNode;
