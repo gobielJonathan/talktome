@@ -9,11 +9,13 @@ import {
 } from "@/components/ui/sheet";
 import { useSocket } from "@/context/socket";
 import { Teams } from "@/models/data";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { usePeer } from "@/context/peer";
 import { CONFIG_NAME } from "@/models/storage";
 import { getUsername } from "@/models/preview";
+import dayjs from "dayjs";
+import { flushSync } from "react-dom";
 
 export default function SheetChat(props: {
   children: ReactNode;
@@ -21,9 +23,10 @@ export default function SheetChat(props: {
 }) {
   const roomId = String(useParams()?.room_id);
   const { myPeerId } = usePeer();
-  const [chats, setChats] = useState<{ username: string; message: string }[]>(
-    []
-  );
+  const [chats, setChats] = useState<
+    { username: string; message: string; time: Date }[]
+  >([]);
+  const listChatRef = useRef<HTMLDivElement | null>(null);
   const [text, setText] = useState("");
 
   const { socket } = useSocket();
@@ -32,10 +35,13 @@ export default function SheetChat(props: {
     if (!socket) return () => {};
 
     const handleChat = (userId: string, message: string) => {
-      setChats((prevChats) => [
-        ...prevChats,
-        { username: props.teams[userId].username, message },
-      ]);
+      flushSync(() => {
+        setChats((prevChats) => [
+          ...prevChats,
+          { username: props.teams[userId].username, message, time: new Date() },
+        ]);
+      });
+      listChatRef.current.scrollTop = listChatRef.current.scrollHeight;
     };
     socket.on("user-send-chat", handleChat);
     return () => {
@@ -45,13 +51,18 @@ export default function SheetChat(props: {
 
   const onSendChat = () => {
     if (text && myPeerId && socket) {
-      setChats((prevChats) => [
-        ...prevChats,
-        {
-          username: "You",
-          message: text,
-        },
-      ]);
+      flushSync(() => {
+        setChats((prevChats) => [
+          ...prevChats,
+          {
+            username: "You",
+            message: text,
+            time: new Date(),
+          },
+        ]);
+      });
+
+      listChatRef.current.scrollTop = listChatRef.current.scrollHeight;
 
       socket.emit("user-send-chat", myPeerId, roomId, text);
       setText("");
@@ -67,10 +78,18 @@ export default function SheetChat(props: {
         </SheetHeader>
 
         <div className="flex flex-col flex-1">
-          <div className="flex-1 basis-auto h-0 overflow-y-auto mb-4">
+          <div
+            ref={listChatRef}
+            className="flex-1 basis-auto h-0 overflow-y-auto mb-4"
+          >
             {chats.map((chat, index) => (
-              <div key={index}>
-                <b className="font-semibold">{chat.username}</b>
+              <div key={index} className="mb-2">
+                <span>
+                  <b className="font-semibold">{chat.username}</b>{" "}
+                  <span className="ml-1 text-xs">
+                    {dayjs(chat.time).format("HH:mm:ss")}
+                  </span>
+                </span>
                 <p>{chat.message}</p>
               </div>
             ))}
