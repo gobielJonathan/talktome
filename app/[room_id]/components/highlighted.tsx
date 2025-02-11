@@ -5,6 +5,7 @@ import { Team } from "@/models/data";
 import { usePeer } from "@/context/peer";
 import { MAX_TEAMS_HIGHLIGHTED_PER_PAGE } from "@/models/preview";
 import { RoomSlider } from "./room-slider";
+import { createShareScreenPeerId } from "@/models/peer";
 
 interface Props {
   highlighted: Team[];
@@ -18,7 +19,7 @@ export default function Highlighted(props: Props) {
     <div className="flex flex-col gap-y-2 p-4 h-full">
       <div className="px-2 hidden lg:block">
         <RoomSlider
-        hasDots={false}
+          hasDots={false}
           arrow={{
             next: { className: "w-6 h-6 -right-2 bg-gray-900", iconSize: 14 },
             prev: { className: "w-6 h-6 -left-2 bg-gray-900", iconSize: 14 },
@@ -33,7 +34,10 @@ export default function Highlighted(props: Props) {
                       layout="highlight"
                       url={team.url}
                       muted={team.muted}
-                      isMe={team.peerId === myPeerId}
+                      isMe={
+                        team.peerId === myPeerId ||
+                        team.peerId === createShareScreenPeerId(myPeerId ?? "")
+                      }
                       video={team.video}
                       username={team.username}
                       pinned={team.pinned}
@@ -57,7 +61,10 @@ export default function Highlighted(props: Props) {
             <Player
               url={team.url}
               muted={team.muted}
-              isMe={team.peerId === myPeerId}
+              isMe={
+                team.peerId === myPeerId ||
+                team.peerId === createShareScreenPeerId(myPeerId ?? "")
+              }
               video={team.video}
               username={team.username}
               pinned
