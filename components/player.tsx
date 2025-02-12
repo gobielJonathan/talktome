@@ -2,10 +2,9 @@ import { MicOff } from "lucide-react";
 import ReactPlayer from "react-player";
 import clsx from "clsx";
 import { memo } from "react";
-import Image from "next/image";
 
 import { Team } from "@/models/data";
-import { AspectRatio } from "./ui/aspect-ratio";
+import Avatar from "@/app/[room_id]/components/avatar";
 
 type Props = Omit<Team, "peerId"> & {
   isMe: boolean;
@@ -36,18 +35,11 @@ function Player(props: Props) {
         )}
       >
         <div
-          className={clsx("w-32", {
-            "!w-16": layout === "highlight" && !props.pinned,
+          className={clsx("w-32 h-32", {
+            "!w-16 !h-16": layout === "highlight" && !props.pinned,
           })}
         >
-          <AspectRatio ratio={1 / 1}>
-            <Image
-              fill
-              alt={`user avatar ${props.username}`}
-              src={`https://avatar.iran.liara.run/username?username=${props.username}`}
-              fetchPriority="high"
-            />
-          </AspectRatio>
+          <Avatar name={props.username} />
         </div>
       </div>
       <ReactPlayer

@@ -355,14 +355,14 @@ export default function Room() {
       </div>
 
       <div className="grid grid-cols-12 py-4 px-6 shrink-0">
-        <div className="col-span-3 hidden xl:inline-flex items-center">
+        <div className="col-span-3 hidden lg:inline-flex items-center">
           <p className="text-white font-semibold">
             {dayjs(time).format("HH:mm")}
           </p>
           <span className="text-white mx-3"> | </span>
           <p className="text-white font-semibold">{roomId}</p>
         </div>
-        <div className="col-span-12 xl:col-span-6 inline-flex gap-x-2 justify-center">
+        <div className="col-span-12 lg:col-span-6 inline-flex gap-x-2 justify-center">
           <button
             className="rounded-full hover:bg-gray-600 bg-gray-700 p-2"
             onClick={toggleAudio}
@@ -390,7 +390,7 @@ export default function Room() {
             <PhoneOff color="white" />
           </button>
         </div>
-        <div className="col-span-3 hidden xl:inline-flex gap-x-2 justify-end">
+        <div className="col-span-3 hidden lg:inline-flex gap-x-2 justify-end">
           <SheetInfo>
             <Info color="white" />
           </SheetInfo>

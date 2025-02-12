@@ -35,15 +35,15 @@ export default function HomeClient() {
   return (
     <>
       <div className="pt-10 lg:pt-[10rem] px-10 md:px-20">
-        <div className="grid grid-cols-12">
-          <div className="col-span-12 lg:col-span-6">
+        <div className="flex">
+          <div className="basis-full md:basis-1/2">
             <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight lg:text-5xl">
               Video calls and meetings for everyone
             </h1>
             <p className="leading-7 [&:not(:first-child)]:mt-6 text-2xl text-muted-foreground">
               Connect, collaborate and celebrate from anywhere with talktome
             </p>
-            <div className="mt-8 inline-flex flex-col md:flex-row space-y-4 md:space-y-0 items-center md:space-x-4">
+            <div className="mt-8 flex flex-wrap space-y-3 md:space-y-0 items-center md:space-x-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
@@ -51,9 +51,9 @@ export default function HomeClient() {
                     New Meeting
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="w-56" align="start">
                   <DropdownMenuLabel onClick={startInstantMeeting}>
-                    <button>Start instant meeting</button>
+                    <button className="w-full text-left">Start instant meeting</button>
                   </DropdownMenuLabel>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -81,7 +81,6 @@ export default function HomeClient() {
               </Form>
             </div>
           </div>
-          <div className="col-span-6"></div>
         </div>
       </div>
     </>
