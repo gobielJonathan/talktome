@@ -4,6 +4,9 @@ import { ArrowRight, ArrowLeft } from "lucide-react";
 import { ReactNode, PropsWithChildren, ComponentProps, useRef } from "react";
 import { GliderMethods } from "react-glider/dist/types";
 
+import "glider-js/glider.min.css";
+
+
 function RoomSliderContainer({ children }: { children: ReactNode }) {
   return (
     <div className="h-full [&_.glider]:h-full [&_.glider-track]:h-full relative">

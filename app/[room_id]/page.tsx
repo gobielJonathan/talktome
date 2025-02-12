@@ -1,24 +1,24 @@
-"use client";
+import { Metadata } from "next";
+import RoomClient from "./page.client";
 
-import { useMemo, useState } from "react";
-import { PeerProvider } from "@/context/peer";
-import dynamic from "next/dynamic";
+export const metadata: Metadata = {
+  title: "TalkToMe - Unlimited Meeting Web App | No Time Limits",
+  description:
+    "TalkToMe is a web application designed to replicate Google Meet without the 1-hour meeting time limit. Enjoy seamless, uninterrupted communication for all your meetings.",
+  keywords:
+    "talktome, talk to me, video call, video meeting, web app, google meet, no time limit, unlimited meeting",
+  robots: "index, nofollow",
 
-const  Preview = dynamic(() => import("./components/preview"), {ssr: false});
-const  Room = dynamic(() => import("./components/room"), {ssr: false});
+  openGraph: {
+    type: "website",
+    url: "https://talktome.up.railway.app/",
+    title: "TalkToMe - Unlimited Meeting Web App | No Time Limits",
+    description:
+      "TalkToMe is a web application designed to replicate Google Meet without the 1-hour meeting time limit. Enjoy seamless, uninterrupted communication for all your meetings.",
+    siteName: "TalkToMe",
+  },
+};
 
 export default function Page() {
-  const [step, setStep] = useState(1);
-
-  const steps = useMemo(
-    () => ({
-      1: <Preview onNextStep={() => setStep((prev) => prev + 1)} />,
-      2: <PeerProvider>
-        <Room />
-      </PeerProvider>,
-    }),
-    [setStep]
-  );
-
-  return <>{steps[step]}</>;
+  return <RoomClient />;
 }

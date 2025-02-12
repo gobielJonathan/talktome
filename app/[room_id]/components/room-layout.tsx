@@ -1,5 +1,4 @@
 import chunk from "lodash/chunk";
-import "glider-js/glider.min.css";
 
 import { Teams } from "@/models/data";
 import Highlighted from "./highlighted";
@@ -79,8 +78,8 @@ export default function RoomLayout(props: Props) {
           <Player
             key={id}
             muted={muted}
-            isMe={id === myPeerId || 
-              id === createShareScreenPeerId(myPeerId ?? "")
+            isMe={
+              id === myPeerId || id === createShareScreenPeerId(myPeerId ?? "")
             }
             video={video}
             url={url}
