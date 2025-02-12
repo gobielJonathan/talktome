@@ -38,15 +38,15 @@ export default function RoomLayout(props: Props) {
               className="grid gap-4 p-4 grid-cols-3 grid-rows-3 h-full"
               key={idx}
             >
-              {Object.entries(teams).map(([id, team]) => {
+              {teams.map((team) => {
                 const { muted, video, url, username, pinned } = team;
                 return (
                   <Player
-                    key={id}
+                    key={team.peerId}
                     muted={muted}
                     isMe={
-                      id === myPeerId ||
-                      id === createShareScreenPeerId(myPeerId ?? "")
+                      team.peerId === myPeerId ||
+                      team.peerId === createShareScreenPeerId(myPeerId ?? "")
                     }
                     video={video}
                     url={url}
@@ -72,14 +72,21 @@ export default function RoomLayout(props: Props) {
         gridTemplateRows: `repeat(${row}, 1fr)`,
       }}
     >
-      {Object.entries(unHighlightTeams).map(([id, team]) => {
+      {unHighlightTeams.map((team) => {
         const { muted, video, url, username, pinned } = team;
+        console.log(
+          "is me",
+          team.peerId,
+          myPeerId,
+          createShareScreenPeerId(myPeerId ?? "")
+        );
         return (
           <Player
-            key={id}
+            key={team.peerId}
             muted={muted}
             isMe={
-              id === myPeerId || id === createShareScreenPeerId(myPeerId ?? "")
+              team.peerId === myPeerId ||
+              team.peerId === createShareScreenPeerId(myPeerId ?? "")
             }
             video={video}
             url={url}
