@@ -12,7 +12,7 @@ const backgroundColors = [
 ];
 
 function getSymbolName(name: string) {
-  if (name.split(" ").length > 0) {
+  if (name.split(" ").length > 1) {
     const [first, second] = name.split(" ");
     return first.charAt(0).toUpperCase() + second.charAt(0).toUpperCase();
   }
