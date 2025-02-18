@@ -74,12 +74,6 @@ export default function RoomLayout(props: Props) {
     >
       {unHighlightTeams.map((team) => {
         const { muted, video, url, username, pinned } = team;
-        console.log(
-          "is me",
-          team.peerId,
-          myPeerId,
-          createShareScreenPeerId(myPeerId ?? "")
-        );
         return (
           <Player
             key={team.peerId}

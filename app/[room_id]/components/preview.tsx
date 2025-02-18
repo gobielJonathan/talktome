@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { Mic, MicOff, Camera, CameraOff, CircleAlert } from "lucide-react";
 import { useStream } from "@/context/stream";
@@ -25,6 +25,8 @@ import { z } from "zod";
 import clsx from "clsx";
 import PromptAccess from "./prompt-access";
 import { getMutedValue, getVideoValue } from "@/models/preview";
+import { send } from "@/lib/tracker";
+import { useParams } from "next/navigation";
 
 const formSchema = z.object({
   name: z
@@ -73,10 +75,16 @@ function JoinForm(props: { onSuccess: () => void }) {
   );
 }
 export default function Preview(props: { onNextStep: () => void }) {
+  const roomId = String(useParams()?.room_id);
+
   const [muted, setMuted] = useState(getMutedValue());
   const [videoEnable, setVideoEnable] = useState(getVideoValue());
 
   const { stream, hasAccessAudio, hasAccessVideo } = useStream();
+
+  useEffect(() => {
+    send({ event: "page_view", page: "preview room " + roomId });
+  }, []);
 
   const toggleAudio = () => {
     if (hasAccessAudio)
@@ -93,6 +101,11 @@ export default function Preview(props: { onNextStep: () => void }) {
         return !prev;
       });
   };
+
+  const onNextStep = () => {
+    props.onNextStep()
+    send({ event: "button_click", text: "Join room ", page: "preview room " + roomId });
+  }
 
   const hasFullAccess = hasAccessAudio && hasAccessVideo;
 
@@ -193,7 +206,7 @@ export default function Preview(props: { onNextStep: () => void }) {
           <h4 className="text-2xl font-semibold tracking-tigh text-center">
             Ready to join?
           </h4>
-          <JoinForm onSuccess={props.onNextStep} />
+          <JoinForm onSuccess={onNextStep} />
         </div>
       </div>
     </div>

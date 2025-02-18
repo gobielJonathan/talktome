@@ -10,6 +10,7 @@ import { useSocket } from "./socket";
 import Peer from "peerjs";
 import { useParams } from "next/navigation";
 import { getMutedValue, getUsername, getVideoValue } from "@/models/preview";
+import { send } from "@/lib/tracker";
 
 interface PeerContext {
   peer?: Peer;
@@ -47,6 +48,8 @@ export const PeerProvider = ({ children }: { children: ReactNode }) => {
         video: getVideoValue(),
       });
       setMyPeerId(id);
+
+      send({ event: "join_room", peer_id: id, room_id: roomId });
     });
     setPeer(_peer);
   }, [socket]);

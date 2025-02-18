@@ -36,6 +36,8 @@ import {
 } from "@/models/preview";
 import clsx from "clsx";
 import { createShareScreenPeerId } from "@/models/peer";
+import { send } from "@/lib/tracker";
+import usePageTime from "@/hooks/use-page-time";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +55,19 @@ export default function Room() {
   const [time, setTime] = useState(new Date());
   const [users, setUsers] = useState<Record<string, MediaConnection>>({});
   const [teams, setTeams] = useState<Teams>({});
+
+  const { getDuration: getDurationPageTime } = usePageTime({
+    onEnter() {
+      send({ event: "page_view", page: "room " + roomId });
+    },
+    onLeave() {
+      send({
+        event: "page_leave",
+        page: "room " + roomId,
+        pageTime: getDurationPageTime() + " minutes",
+      });
+    },
+  });
 
   useEffect(() => {
     window.addEventListener("unload", handleUserLeave);
@@ -85,7 +100,7 @@ export default function Room() {
             username: shareScreenName,
             muted: false,
             video: true,
-            pinned : true
+            pinned: true,
           },
         });
       }
@@ -260,6 +275,12 @@ export default function Room() {
     socket.emit("user-leave", myPeerId, roomId);
     peer.disconnect();
 
+    send({
+      event: "page_leave",
+      page: "room " + roomId,
+      pageTime: getDurationPageTime() + " minutes",
+    });
+
     router.push("/");
   };
 
@@ -314,16 +335,18 @@ export default function Room() {
           },
         });
       });
+
+      send({ event: "share_screen", peer_id: myPeerId, room_id: roomId });
     });
 
     _screenStream.getTracks().forEach((track) => {
       track.addEventListener("ended", handleUserUnshare);
-    })
-    
+    });
+
     unsubscribe(() => {
       _screenStream.getTracks().forEach((track) => {
-      track.removeEventListener("ended", handleUserUnshare);
-      })
+        track.removeEventListener("ended", handleUserUnshare);
+      });
     });
   };
 

@@ -37,7 +37,6 @@ export const StreamProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-
     (async function checkPermission() {
       const cameraPermission = await navigator.permissions.query({
         name: "camera",
@@ -45,32 +44,36 @@ export const StreamProvider = ({ children }: { children: ReactNode }) => {
       const microphonePermission = await navigator.permissions.query({
         name: "microphone",
       });
+
       setHasAccessVideo(cameraPermission.state === "granted");
       setHasAccessAudio(microphonePermission.state === "granted");
-  
+
       cameraPermission.addEventListener("change", () => {
         console.log("Camera permission changed to:", cameraPermission.state);
         setHasAccessVideo(cameraPermission.state === "granted");
-        getVideoSharing().then(stream => {
+        getVideoSharing().then((stream) => {
           if (stream) setStream(stream);
-
         });
-      })
-     
+      });
+
       microphonePermission.addEventListener("change", () => {
         setHasAccessAudio(microphonePermission.state === "granted");
         console.log(
           "Microphone permission changed to:",
           microphonePermission.state
         );
-      })
-    })()
-   
+      });
+    })();
   }, []);
 
   return (
     <StreamContext
-      value={{ setStream, stream, hasAccessAudio: hasAccessAudio, hasAccessVideo }}
+      value={{
+        setStream,
+        stream,
+        hasAccessAudio: hasAccessAudio,
+        hasAccessVideo,
+      }}
     >
       {children}
     </StreamContext>

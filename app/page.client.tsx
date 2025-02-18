@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import generateMeetingCode from "@/utils/generate-meeting-code";
+import { useEffect } from "react";
+import { send } from "@/lib/tracker";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -24,26 +26,44 @@ export default function HomeClient() {
     },
   });
 
+  useEffect(() => {
+    send({ event: "page_view", page: "home" });
+  }, []);
+
   const onJoin = (data: { code: string }) => {
     router.push("/" + data.code);
+    send({
+      event: "button_click",
+      text: "join",
+      page: "home",
+      room_id: data.code,
+    });
   };
 
   const startInstantMeeting = () => {
-    router.push("/" + generateMeetingCode());
+    const roomId = generateMeetingCode();
+    send({
+      event: "button_click",
+      text: "start instant meeting",
+      page: "home",
+      room_id: roomId,
+    });
+
+    router.push("/" + roomId);
   };
 
   return (
     <>
-      <div className="pt-10 lg:pt-[10rem] px-10 md:px-20">
+      <div className="pt-10 lg:pt-[10rem] px-10 lg:px-20">
         <div className="flex">
-          <div className="basis-full md:basis-1/2">
+          <div className="basis-full lg:basis-1/2">
             <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight lg:text-5xl">
               Video calls and meetings for everyone
             </h1>
             <p className="leading-7 [&:not(:first-child)]:mt-6 text-2xl text-muted-foreground">
               Connect, collaborate and celebrate from anywhere with talktome
             </p>
-            <div className="mt-8 flex flex-wrap space-y-3 md:space-y-0 items-center md:space-x-3">
+            <div className="mt-8 flex flex-wrap items-center space-y-3 sm:space-y-0 sm:space-x-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
@@ -53,7 +73,9 @@ export default function HomeClient() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="start">
                   <DropdownMenuLabel onClick={startInstantMeeting}>
-                    <button className="w-full text-left">Start instant meeting</button>
+                    <button className="w-full text-left">
+                      Start instant meeting
+                    </button>
                   </DropdownMenuLabel>
                 </DropdownMenuContent>
               </DropdownMenu>
