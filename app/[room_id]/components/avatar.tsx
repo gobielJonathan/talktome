@@ -19,19 +19,22 @@ function getSymbolName(name: string) {
   return name.charAt(0).toUpperCase() + name.charAt(1).toUpperCase();
 }
 
-function Avatar(props: { name: string }) {
+function Avatar(props: { name: string; textSize: "lg" | "sm" }) {
   return (
     <div
       className={clsx(
         "w-full h-full rounded-full flex items-center justify-center",
-        {
-          [backgroundColors[
-            Math.floor(Math.random() * backgroundColors.length)
-          ]]: true,
-        }
+        backgroundColors[Math.floor(Math.random() * backgroundColors.length)]
       )}
     >
-      <span className="text-3xl">{getSymbolName(props.name.trim())}</span>
+      <span
+        className={clsx({
+          "text-3xl": props.textSize === "lg",
+          "text-lg": props.textSize === "sm",
+        })}
+      >
+        {getSymbolName(props.name.trim())}
+      </span>
     </div>
   );
 }

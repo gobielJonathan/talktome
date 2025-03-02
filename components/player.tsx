@@ -39,7 +39,7 @@ function Player(props: Props) {
             "!w-16 !h-16": layout === "highlight" && !props.pinned,
           })}
         >
-          <Avatar name={props.username} />
+          <Avatar textSize="lg" name={props.username} />
         </div>
       </div>
       <ReactPlayer

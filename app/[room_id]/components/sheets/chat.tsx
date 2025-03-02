@@ -87,7 +87,7 @@ export default function SheetChat(props: {
                 <span>
                   <b className="font-semibold">{chat.username}</b>{" "}
                   <span className="ml-1 text-xs">
-                    {dayjs(chat.time).format("HH:mm:ss")}
+                    {new Date(chat.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                   </span>
                 </span>
                 <p>{chat.message}</p>

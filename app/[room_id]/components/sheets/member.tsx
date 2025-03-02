@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { ReactNode, useEffect, useState } from "react";
-import { Mic, MicOff, EllipsisVertical, Pin } from "lucide-react";
+import { Mic, MicOff, EllipsisVertical, Pin, Camera, CameraOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -17,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MAX_TEAMS_HIGHLIGHT } from "@/models/preview";
+import Avatar from "../avatar";
 
 interface Props {
   children: ReactNode;
@@ -64,25 +64,20 @@ export default function SheetMember(props: Props) {
                 key={team.peerId}
                 className="flex w-full gap-x-3 items-center"
               >
-                <div>
-                  <Image
-                    alt="user avatar"
-                    src={`https://avatar.iran.liara.run/username?username=${team.username}`}
-                    width={32}
-                    height={32}
-                    loading="eager"
-                  />
+                <div className="w-8 h-8">
+                  <Avatar textSize="sm" name={team.username} />
                 </div>
                 <div className="flex-1">
                   <p className="text-lg capitalize">{team.username}</p>
                 </div>
                 <div className="inline-flex items-center gap-x-4">
+                  {team.video ? <Camera /> : <CameraOff />}
                   {team.muted ? <MicOff /> : <Mic />}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <EllipsisVertical />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem
                         className="hover:cursor-pointer"
                         onClick={() => onPin(team)}
