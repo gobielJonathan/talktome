@@ -33,8 +33,12 @@ export const setUsername = (value: boolean) =>
   localStorage.setItem(CONFIG_NAME, value.toString());
 
 
-export const MAX_TEAMS_HIGHLIGHTED_PER_PAGE = 6;
+export const MAX_TEAMS_HIGHLIGHTED_PER_PAGE_DESKTOP = 6;
 
-export const MAX_TEAMS_GRID_PER_PAGE = 9;
+export const MAX_TEAMS_HIGHLIGHTED_PER_PAGE_MOBILE = 4;
+
+export const MAX_TEAMS_GRID_PER_PAGE_DESKTOP = 9;
+
+export const MAX_TEAMS_GRID_PER_PAGE_MOBILE = 4;
 
 export const MAX_TEAMS_HIGHLIGHT = 4

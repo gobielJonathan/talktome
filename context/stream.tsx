@@ -4,6 +4,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -12,6 +13,7 @@ interface StreamContextType {
   hasAccessAudio: boolean;
   hasAccessVideo: boolean;
   setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
+  toggleFaceMode: () => Promise<void>;
 }
 
 const StreamContext = createContext<StreamContextType | undefined>(undefined);
@@ -29,12 +31,15 @@ export const StreamProvider = ({ children }: { children: ReactNode }) => {
   const [hasAccessAudio, setHasAccessAudio] = useState(true);
   const [hasAccessVideo, setHasAccessVideo] = useState(true);
 
+  const facingMode = useRef<"user" | "enviroment">("user");
+
   useEffect(() => {
     (async function initVideoStream() {
-      const stream = await getVideoSharing();
+      const stream = await getVideoSharing(facingMode.current);
       if (stream) setStream(stream);
     })();
   }, []);
+
 
   useEffect(() => {
     (async function checkPermission() {
@@ -66,6 +71,15 @@ export const StreamProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, []);
 
+  /**
+   * @description only available on mobile
+   */
+  const toggleFaceMode = async () => {
+    facingMode.current = facingMode.current === "user" ? "enviroment" : "user"
+    const videoStream = await getVideoSharing(facingMode.current);
+    videoStream && setStream(videoStream)
+  }
+
   return (
     <StreamContext
       value={{
@@ -73,6 +87,7 @@ export const StreamProvider = ({ children }: { children: ReactNode }) => {
         stream,
         hasAccessAudio: hasAccessAudio,
         hasAccessVideo,
+        toggleFaceMode
       }}
     >
       {children}

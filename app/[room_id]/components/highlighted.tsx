@@ -4,9 +4,10 @@ import Player from "@/components/player";
 
 import { Team } from "@/models/data";
 import { usePeer } from "@/context/peer";
-import { MAX_TEAMS_HIGHLIGHTED_PER_PAGE } from "@/models/preview";
+import { MAX_TEAMS_HIGHLIGHTED_PER_PAGE_DESKTOP, MAX_TEAMS_HIGHLIGHTED_PER_PAGE_MOBILE } from "@/models/preview";
 import { RoomSlider } from "./room-slider";
 import { createShareScreenPeerId } from "@/models/peer";
+import { useWindowSize } from "@/hooks/use-window-size";
 
 interface Props {
   highlighted: Team[];
@@ -15,6 +16,8 @@ interface Props {
 
 export default function Highlighted(props: Props) {
   const { myPeerId } = usePeer();
+  const windowSize = useWindowSize()
+  const isMobile = windowSize === 'sm'
 
   return (
     <div className="flex flex-col gap-y-2 p-4 h-full">
@@ -26,7 +29,7 @@ export default function Highlighted(props: Props) {
             prev: { className: "w-6 h-6 -left-2 bg-gray-900", iconSize: 14 },
           }}
         >
-          {chunk(props.teams, MAX_TEAMS_HIGHLIGHTED_PER_PAGE).map(
+          {chunk(props.teams, isMobile ? MAX_TEAMS_HIGHLIGHTED_PER_PAGE_MOBILE : MAX_TEAMS_HIGHLIGHTED_PER_PAGE_DESKTOP).map(
             (teams, index) => (
               <div key={index} className="flex gap-x-4">
                 {teams.map((team) => (
@@ -60,6 +63,8 @@ export default function Highlighted(props: Props) {
         {props.highlighted.map((team, index) => (
           <div key={index}>
             <Player
+            pinned
+              layout="highlight"
               url={team.url}
               muted={team.muted}
               isMe={
@@ -68,8 +73,6 @@ export default function Highlighted(props: Props) {
               }
               video={team.video}
               username={team.username}
-              pinned
-              layout="highlight"
             />
           </div>
         ))}

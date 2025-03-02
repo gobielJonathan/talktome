@@ -6,9 +6,13 @@ import Player from "@/components/player";
 
 import { usePeer } from "@/context/peer";
 import getVideoGrid from "@/lib/get-video-grid";
-import { MAX_TEAMS_GRID_PER_PAGE } from "@/models/preview";
+import {
+  MAX_TEAMS_GRID_PER_PAGE_DESKTOP,
+  MAX_TEAMS_GRID_PER_PAGE_MOBILE,
+} from "@/models/preview";
 import { RoomSlider } from "./room-slider";
 import { createShareScreenPeerId } from "@/models/peer";
+import { useWindowSize } from "@/hooks/use-window-size";
 
 interface Props {
   teams: Teams;
@@ -17,10 +21,17 @@ interface Props {
 export default function RoomLayout(props: Props) {
   const { teams } = props;
 
+  const windowSize = useWindowSize();
+
   const { myPeerId } = usePeer();
 
   const highlightTeams = Object.values(teams).filter((team) => team.pinned);
   const unHighlightTeams = Object.values(teams).filter((team) => !team.pinned);
+
+  const isMobile = windowSize === "sm";
+  const maxGrid = isMobile
+    ? MAX_TEAMS_GRID_PER_PAGE_MOBILE
+    : MAX_TEAMS_GRID_PER_PAGE_DESKTOP;
 
   if (highlightTeams.length > 0) {
     return (
@@ -28,14 +39,14 @@ export default function RoomLayout(props: Props) {
     );
   }
 
-  const isMultiplePage = unHighlightTeams.length / MAX_TEAMS_GRID_PER_PAGE >= 1;
+  const isMultiplePage = unHighlightTeams.length / maxGrid > 1;
   if (isMultiplePage) {
     return (
       <RoomSlider>
-        {chunk(unHighlightTeams, MAX_TEAMS_GRID_PER_PAGE).map((teams, idx) => {
+        {chunk(unHighlightTeams, maxGrid).map((teams, idx) => {
           return (
             <div
-              className="grid gap-4 p-4 grid-cols-3 grid-rows-3 h-full"
+              className="grid gap-4 p-4 grid-cols-2 grid-rows-2 lg:grid-cols-3 lg:grid-rows-3 h-full"
               key={idx}
             >
               {teams.map((team) => {
@@ -62,8 +73,7 @@ export default function RoomLayout(props: Props) {
     );
   }
 
-  const { col, row } = getVideoGrid(unHighlightTeams.length);
-
+  const { col, row } = getVideoGrid(unHighlightTeams.length, isMobile);
   return (
     <div
       className="grid gap-4 p-4 h-full"

@@ -13,6 +13,7 @@ import {
   CameraOff,
   Monitor,
   PhoneOff,
+  SwitchCamera,
 } from "lucide-react";
 import cloneDeep from "lodash/cloneDeep";
 import dayjs from "dayjs";
@@ -47,7 +48,7 @@ export default function Room() {
   const { socket } = useSocket();
   const { myPeerId, peer } = usePeer();
 
-  const { stream } = useStream();
+  const { stream, toggleFaceMode } = useStream();
   const shareScreenPeer = useRef<Peer | null>(null);
   const screenStream = useRef<MediaStream | null>(null);
 
@@ -55,6 +56,8 @@ export default function Room() {
   const [time, setTime] = useState(new Date());
   const [users, setUsers] = useState<Record<string, MediaConnection>>({});
   const [teams, setTeams] = useState<Teams>({});
+
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   const { getDuration: getDurationPageTime } = usePageTime({
     onEnter() {
@@ -361,6 +364,23 @@ export default function Room() {
     socket.emit("user-toggle-highlight", team.peerId, roomId);
   };
 
+  const switchCamera = () => {
+    if (!isMobile || !myPeerId || !peer || !stream) return;
+
+    toggleFaceMode().then(() => {
+      Object.values(users).forEach((user) => {
+        const peerID = user.peer;
+        peer.call(peerID, stream, {
+          metadata: {
+            username: getUsername(),
+            muted: getMutedValue(),
+            video: getVideoValue(),
+          },
+        });
+      });
+    });
+  };
+
   //get the player config ( playing and muted )
   const { muted = getMutedValue(), video = getVideoValue() } =
     teams[myPeerId ?? ""] || {};
@@ -371,6 +391,11 @@ export default function Room() {
     <div className="bg-gray-900 flex flex-col h-screen">
       <header className="inline-flex lg:hidden items-center py-2 px-6">
         <p className="text-white font-semibold">{roomId}</p>
+        <div className="ml-auto inline-flex items-center">
+          <button onClick={switchCamera}>
+            <SwitchCamera className="text-white" />
+          </button>
+        </div>
       </header>
 
       <div className="flex-1">
